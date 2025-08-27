@@ -1,0 +1,7 @@
+/* Minimal style for no data message (shared with products table) */
+.no-data-message {
+  text-align: center;
+  color: #888;
+  font-size: 1.1rem;
+  padding: 24px 0;
+}

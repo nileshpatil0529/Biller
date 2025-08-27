@@ -1,0 +1,134 @@
+<div class="container mt-2">
+  <div class="top-bar-row mt-3">
+  <button mat-raised-button color="primary" class="mb-4" [matMenuTriggerFor]="actionsMenu">
+      Actions <mat-icon>arrow_drop_down</mat-icon>
+    </button>
+    <mat-menu #actionsMenu="matMenu">
+      <button mat-menu-item (click)="addRow()">Add Row</button>
+      <button mat-menu-item (click)="importProducts()">Import</button>
+      <button mat-menu-item (click)="exportProducts()"> Export</button>
+    </mat-menu>
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search Products</mat-label>
+      <input matInput type="text" [(ngModel)]="productSearch" (ngModelChange)="applyFilter($event)" placeholder="Type to search..." />
+      <button mat-icon-button matSuffix (click)="clearSearch(); $event.preventDefault(); $event.stopPropagation();">
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+  </div>
+  <table mat-table [dataSource]="dataSource" class="mat-elevation-z2 w-100 products-table">
+  <ng-container matColumnDef="code">
+      <th mat-header-cell *matHeaderCellDef>Product Code</th>
+      <td mat-cell *matCellDef="let product; let i = index">
+        <form *ngIf="
+            (addingRow && i === 0) || (showForm && editingProduct === product);
+            else showCode
+          " [formGroup]="productForm" class="d-inline">
+          <input matInput formControlName="code" class="form-control form-control-sm" />
+        </form>
+        <ng-template #showCode>{{ product.code }}</ng-template>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Product Name (Eng)</th>
+      <td mat-cell *matCellDef="let product; let i = index">
+        <form *ngIf="
+            (addingRow && i === 0) || (showForm && editingProduct === product);
+            else showName
+          " [formGroup]="productForm" class="d-inline">
+          <input matInput formControlName="name" class="form-control form-control-sm" />
+        </form>
+        <ng-template #showName>{{ product.name }}</ng-template>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="nameHindi">
+      <th mat-header-cell *matHeaderCellDef>Product Name (Hindi)</th>
+      <td mat-cell *matCellDef="let product; let i = index">
+        <form *ngIf="
+            (addingRow && i === 0) || (showForm && editingProduct === product);
+            else showNameHindi
+          " [formGroup]="productForm" class="d-inline">
+          <input matInput formControlName="nameHindi" class="form-control form-control-sm" />
+        </form>
+        <ng-template #showNameHindi>{{ product.nameHindi }}</ng-template>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="unit">
+      <th mat-header-cell *matHeaderCellDef>Unit</th>
+      <td mat-cell *matCellDef="let product; let i = index">
+        <form *ngIf="
+            (addingRow && i === 0) || (showForm && editingProduct === product);
+            else showUnit
+          " [formGroup]="productForm" class="d-inline">
+          <select matInput formControlName="unit" class="form-control form-control-sm">
+            <option value="">Select Unit</option>
+            <option *ngFor="let u of units" [value]="u">{{ u }}</option>
+          </select>
+        </form>
+        <ng-template #showUnit>{{ product.unit }}</ng-template>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="price">
+      <th mat-header-cell *matHeaderCellDef>Price</th>
+      <td mat-cell *matCellDef="let product; let i = index">
+        <form *ngIf="
+            (addingRow && i === 0) || (showForm && editingProduct === product);
+            else showPrice
+          " [formGroup]="productForm" class="d-inline">
+          <input matInput type="number" formControlName="price" class="form-control form-control-sm" />
+        </form>
+        <ng-template #showPrice>{{ product.price }}</ng-template>
+      </td>
+    </ng-container>
+  <ng-container matColumnDef="stockQty">
+      <th mat-header-cell *matHeaderCellDef>Stock Qty</th>
+      <td mat-cell *matCellDef="let product; let i = index">
+        <form *ngIf="
+            (addingRow && i === 0) || (showForm && editingProduct === product);
+            else showStock
+          " [formGroup]="productForm" class="d-inline">
+          <input matInput type="number" formControlName="stockQty" class="form-control form-control-sm" />
+        </form>
+        <ng-template #showStock>{{ product.stockQty }}</ng-template>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef>Actions</th>
+      <td mat-cell *matCellDef="let product; let i = index">
+  <!-- Removed sell_qty button group -->
+          <ng-container *ngIf="addingRow && i === 0">
+            <button mat-button color="primary" (click)="saveProduct()">
+              Save
+            </button>
+            <button mat-button color="warn" (click)="cancelNewRow()">
+              Cancel
+            </button>
+          </ng-container>
+          <ng-container *ngIf="showForm && editingProduct === product">
+            <button mat-button color="primary" (click)="saveProduct()">
+              Save
+            </button>
+            <button mat-button color="warn" (click)="closeForm()">
+              Cancel
+            </button>
+          </ng-container>
+          <ng-container *ngIf="
+              !(addingRow && i === 0) &&
+              !(showForm && editingProduct === product)
+            ">
+            <button mat-icon-button color="primary" (click)="openForm(product)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="deleteProduct(i)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </ng-container>
+        </td>
+      </ng-container>
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    <!-- No data row removed; message will be shown below the table -->
+  </table>
+  <div *ngIf="dataSource.filteredData.length === 0" class="no-data-message">No data available.</div>
+  <mat-paginator *ngIf="dataSource.filteredData.length > 0" [length]="total" [pageSize]="pageSize" [pageSizeOptions]="pageSizeOptions" (page)="onMatPage($event)"></mat-paginator>
+</div>

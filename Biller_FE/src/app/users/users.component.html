@@ -1,0 +1,106 @@
+<div class="container mt-4">
+  <h2 class="mb-3">User Management</h2>
+  <div class="mb-3">
+    <button mat-raised-button color="primary" (click)="addRow()" [disabled]="addingRow || editingRow !== null">
+      Add
+    </button>
+  </div>
+  <table mat-table [dataSource]="dataSource" class="mat-elevation-z2 w-100">
+    <!-- Removed duplicate id column definition -->
+    <ng-container matColumnDef="id">
+      <th mat-header-cell *matHeaderCellDef>ID</th>
+      <td mat-cell *matCellDef="let user; let i = index">
+        <ng-container *ngIf="addingRow && user.id === 0; else showId">
+          --
+        </ng-container>
+        <ng-template #showId>{{ i + 1 }}</ng-template>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Name</th>
+      <td mat-cell *matCellDef="let user">
+        <ng-container *ngIf="
+            editingRow === user.id || (addingRow && user.id === 0);
+            else showName
+          ">
+          <div [formGroup]="addEditForm">
+            <input type="text" formControlName="name" placeholder="Name" class="form-control form-control-sm" />
+            <div *ngIf="
+                addEditForm.get('name')?.hasError('required') &&
+                addEditForm.get('name')?.touched
+              " class="text-danger small">
+              Name is required
+            </div>
+          </div>
+        </ng-container>
+        <ng-template #showName>{{ user.name }}</ng-template>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="password">
+      <th mat-header-cell *matHeaderCellDef>Password</th>
+      <td mat-cell *matCellDef="let user">
+        <ng-container *ngIf="
+            editingRow === user.id || (addingRow && user.id === 0);
+            else showPassword
+          ">
+          <div [formGroup]="addEditForm">
+            <input type="password" formControlName="password" placeholder="Password" class="form-control form-control-sm" />
+            <div *ngIf="
+                addEditForm.get('password')?.hasError('required') &&
+                addEditForm.get('password')?.touched
+              " class="text-danger small">
+              Password is required
+            </div>
+            <div *ngIf="
+                addEditForm.get('password')?.hasError('minlength') &&
+                addEditForm.get('password')?.touched
+              " class="text-danger small">
+              Password must be at least 8 characters
+            </div>
+          </div>
+        </ng-container>
+        <ng-template #showPassword>
+          <span *ngIf="showPasswordMap[user.id]; else hidePw">
+            {{ user.email }}
+          </span>
+          <ng-template #hidePw>••••••••••••••••••••••••••••••••</ng-template>
+          <button mat-icon-button (click)="toggleShowPassword(user.id)" [attr.aria-label]="
+              showPasswordMap[user.id] ? 'Hide password' : 'Show password'
+            ">
+            <mat-icon>
+              {{ showPasswordMap[user.id] ? "visibility_off" : "visibility" }}
+            </mat-icon>
+          </button>
+        </ng-template>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef>Actions</th>
+      <td mat-cell *matCellDef="let user">
+        <ng-container *ngIf="addingRow && user.id === 0">
+          <button mat-button color="primary" (click)="saveNewRow()">
+            Save
+          </button>
+          <button mat-button color="warn" (click)="cancelNewRow()">
+            Cancel
+          </button>
+        </ng-container>
+        <ng-container *ngIf="editingRow === user.id && !(addingRow && user.id === 0)">
+          <button mat-button color="primary" (click)="saveEdit()">Save</button>
+          <button mat-button color="warn" (click)="cancelEdit()">Cancel</button>
+        </ng-container>
+        <ng-container *ngIf="!((addingRow && user.id === 0) || editingRow === user.id)">
+          <button mat-icon-button color="primary" (click)="startEdit(user)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="deleteUser(user.id)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </ng-container>
+      </td>
+    </ng-container>
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+  </table>
+  <div *ngIf="realUserCount === 0 && !addingRow" class="no-data-message">No data available.</div>
+</div>

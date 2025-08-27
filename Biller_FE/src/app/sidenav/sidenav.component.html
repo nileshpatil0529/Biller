@@ -1,0 +1,30 @@
+<mat-sidenav-container class="sidenav-container">
+  <mat-sidenav mode="side" [opened]="!collapsed" class="sidenav" [class.sidenav-collapsed]="collapsed">
+    <mat-toolbar color="primary" class="sidenav-toolbar">
+      <span *ngIf="!collapsed" class="sidenav-title">Menu</span>
+    </mat-toolbar>
+    <mat-nav-list>
+      <ng-container *ngFor="let item of menuItems">
+        <a mat-list-item [routerLink]="item.route" routerLinkActive="mat-list-item-active"
+          [class.collapsed-link]="collapsed" (click)="collapsed = true">
+          <span class="sidenav-menu-flex">
+            <mat-icon class="menu-icon">{{ item.icon }}</mat-icon>
+            <span *ngIf="!collapsed">{{ item.label }}</span>
+          </span>
+        </a>
+        <mat-divider></mat-divider>
+      </ng-container>
+    </mat-nav-list>
+  </mat-sidenav>
+  <mat-sidenav-content class="sidenav-content">
+    <mat-toolbar color="primary">
+      <button mat-icon-button (click)="toggleSidenav()" aria-label="Toggle sidenav"
+        [ngClass]="{ 'toggle-active': sidenavToggleActive }" (mousedown)="sidenavToggleActive = true"
+        (mouseup)="sidenavToggleActive = false" (mouseleave)="sidenavToggleActive = false">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <span>{{ title }}</span>
+    </mat-toolbar>
+    <ng-content></ng-content>
+  </mat-sidenav-content>
+</mat-sidenav-container>

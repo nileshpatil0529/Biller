@@ -1,0 +1,267 @@
+/* Make % symbol in Discount field black */
+.qty-input[formcontrolname="discount"] + span {
+    color: #000 !important;
+}
+/* Make Discount input text black */
+.qty-input[formcontrolname="discount"] {
+    color: #000 !important;
+}
+.form-actions-with-total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+.grand-total-display {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #388e3c;
+}
+.form-actions-with-total .mat-icon-button {
+    min-width: 36px;
+    min-height: 36px;
+}
+.form-actions-with-total > div {
+    display: flex;
+    gap: 8px;
+}
+.form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 0 !important;
+}
+/* Invoice form styles */
+.invoice-form {
+    /* Remove custom background, border, and box-shadow for theme compatibility */
+    margin-bottom: 0 !important;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-items: center;
+}
+.invoice-form .form-field {
+    min-width: 140px;
+    flex: 1 1 180px;
+}
+.invoice-form .grand-total-display {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #388e3c;
+}
+.invoice-form .mat-raised-button {
+    min-width: 90px;
+}
+/* Force autocomplete dropdown text color to #1976d2 in home autocomplete */
+::ng-deep .mat-mdc-option .autocomplete-table td {
+    color: #009688 !important; /* Material green, good contrast on both themes */
+}
+/* Autocomplete dropdown styling */
+::ng-deep .mat-mdc-option.mdc-list-item--disabled {
+    opacity: 1 !important;
+}
+
+::ng-deep .mat-mdc-option.mdc-list-item--disabled .mdc-list-item__primary-text {
+    color: rgba(0, 0, 0, 0.87) !important;
+    opacity: 1 !important;
+}
+
+::ng-deep .mat-mdc-option.mdc-list-item--disabled:hover {
+    background: rgba(0, 0, 0, 0.04);
+    cursor: default;
+}
+
+.autocomplete-table {
+  width: 100%;
+  max-width: 420px;
+  min-width: 220px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+@media (max-width: 600px) {
+  .autocomplete-table {
+    max-width: 98vw;
+    min-width: 160px;
+  }
+}
+
+.autocomplete-table td {
+    padding: 2px 6px;
+    opacity: 1;
+}
+
+.autocomplete-table .code-col {
+    width: 80px;
+}
+
+.autocomplete-table .name-col {
+    width: 160px;
+}
+
+.autocomplete-table .name-hindi-col {
+    width: 120px;
+}
+
+.autocomplete-table .unit-col {
+    width: 60px;
+}
+
+.autocomplete-table .price-col {
+    width: 80px;
+}
+
+.autocomplete-table .stock-col {
+    width: 80px;
+}
+
+.autocomplete-table .actions-col {
+    width: 140px;
+}
+
+.autocomplete-table .pointer-none {
+    pointer-events: none;
+}
+
+.autocomplete-table .pointer-all {
+    pointer-events: all;
+}
+.search-field.mat-form-field {
+    background: var(--search-bg, #fff);
+    border-radius: 6px;
+    border: 1.5px solid #cfd8dc;
+    color: var(--search-color, #222);
+    transition: background 0.2s, border 0.2s;
+}
+.search-field.mat-form-field-appearance-outline .mat-form-field-outline {
+    color: #90caf9;
+}
+.search-field input.mat-input-element {
+    background: transparent;
+    color: inherit;
+}
+body.dark-theme .search-field.mat-form-field {
+    --search-bg: #232b39;
+    --search-color: #fff;
+    border-color: #3949ab;
+}
+/* Flex row for actions and search */
+.top-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+.top-bar-row > div {
+    display: flex;
+    align-items: center;
+}
+.search-field {
+    min-width: 220px;
+    flex: 1;
+    margin-left: 0;
+}
+/* Minimal style for no data message (shared with users table) */
+.no-data-message {
+    text-align: center;
+    color: #888;
+    font-size: 1.1rem;
+    padding: 24px 0;
+}
+.mat-btn-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sell-qty-group {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border-radius: 18px;
+    padding: 1px 4px;
+    box-shadow: 0 2px 8px rgba(60, 60, 60, 0.07);
+    border: 1.2px solid #e0e0e0;
+    width: fit-content;
+    transition: box-shadow 0.2s, border 0.2s;
+    min-width: 0;
+}
+
+.sell-qty-group:focus-within,
+.sell-qty-group:hover {
+    box-shadow: 0 4px 16px rgba(60, 60, 60, 0.13);
+    border-color: #1976d2;
+}
+
+.qty-btn {
+    min-width: 28px;
+    padding: 0 6px;
+    font-size: 18px;
+    line-height: 1;
+    height: 28px;
+    border-radius: 50%;
+    margin: 0 1px;
+    box-shadow: none;
+    background: #f6f8fa;
+    border: none;
+    transition: background 0.2s;
+}
+
+.qty-btn:hover,
+.qty-btn:focus {
+    background: #e3f2fd;
+}
+
+.qty-btn[color="warn"] {
+    background: #fff0f0;
+}
+
+.qty-btn[color="warn"]:hover,
+.qty-btn[color="warn"]:focus {
+    background: #ffebee;
+}
+
+.qty-input {
+    width: 32px;
+    text-align: center;
+    border: none;
+    background: transparent;
+    font-size: 15px;
+    height: 28px;
+    outline: none;
+    margin: 0 1px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.qty-input:focus {
+    background: #e3f2fd;
+}
+
+.qty-input::-webkit-outer-spin-button,
+.qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.qty-input[type="number"] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.mat-card.invoice-form {
+    background: rgba(255,255,255,0.7);
+}
+body.dark-theme .mat-card.invoice-form {
+    background: rgba(35,43,57,0.7);
+}
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-top: 0 !important;
+}
+table, .mat-table, .products-table {
+  min-width: 600px;
+  width: 100%;
+  white-space: nowrap;
+}

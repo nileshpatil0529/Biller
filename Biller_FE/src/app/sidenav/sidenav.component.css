@@ -1,0 +1,36 @@
+.sidenav-menu-flex {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    gap: 8px;
+}
+
+.sidenav {
+    width: 200px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 1000;
+    overflow-y: auto;
+    transition: width 0.2s;
+}
+
+.sidenav-content {
+    height: 100vh;
+}
+
+.sidenav-collapsed~.sidenav-content {
+    margin-left: 0px;
+}
+
+.menu-icon {
+    margin-right: 12px;
+    font-size: 22px;
+    min-width: 32px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
