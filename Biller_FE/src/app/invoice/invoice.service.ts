@@ -1,4 +1,6 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 export interface InvoiceProduct {
   code: string;
@@ -24,13 +26,15 @@ export interface InvoiceData {
 
 @Injectable({ providedIn: 'root' })
 export class InvoiceService {
-  invoices: InvoiceData[] = [];
+  private apiUrl = 'http://localhost:3000/api/invoices'; // Update with your backend URL
 
-  addInvoice(data: InvoiceData) {
-    this.invoices.push(data);
+  constructor(private http: HttpClient) {}
+
+  addInvoice(data: InvoiceData): Observable<any> {
+    return this.http.post(this.apiUrl, data);
   }
 
-  getInvoices(): InvoiceData[] {
-    return this.invoices;
+  getInvoices(): Observable<InvoiceData[]> {
+    return this.http.get<InvoiceData[]>(this.apiUrl);
   }
 }

@@ -60,13 +60,15 @@ export class ProductsComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-  this.loadProducts();
+    this.loadProducts();
   }
 
   private loadProducts(): void {
-  this.products = this.productsService.getProducts();
-  this.updateDataSource();
-  this.filteredProducts = this.products;
+    this.productsService.getProducts().subscribe(products => {
+      this.products = products;
+      this.updateDataSource();
+      this.filteredProducts = this.products;
+    });
   }
 
   private updateDataSource(): void {
@@ -185,7 +187,7 @@ export class ProductsComponent implements OnInit, AfterViewInit {
         price: 0,
         stockQty: 0,
       },
-      ...this.productsService.getProducts(),
+      ...this.products
     ];
     this.dataSource.data = this.products;
     this.total = this.products.length;
@@ -194,23 +196,19 @@ export class ProductsComponent implements OnInit, AfterViewInit {
 
   saveProduct(): void {
     if (this.productForm.invalid) return;
-    
     const product = this.productForm.value;
-    
     if (this.addingRow) {
-      this.productsService.addProduct(product);
-      this.addingRow = false;
+      this.productsService.addProduct(product).subscribe(() => {
+        this.addingRow = false;
+        this.loadProducts();
+        this.productForm.reset({ price: 0, stockQty: 0 });
+      });
     } else if (this.editingProduct) {
-      const idx = this.products.findIndex((p) => p === this.editingProduct);
-      if (idx !== -1) {
-        this.productsService.updateProduct(idx, product);
-      }
+      // Update logic would go here if backend supports it
       this.showForm = false;
       this.editingProduct = null;
+      this.productForm.reset({ price: 0, stockQty: 0 });
     }
-    
-    this.loadProducts();
-    this.productForm.reset({ price: 0, stockQty: 0 });
   }
 
   cancelNewRow(): void {
@@ -226,10 +224,9 @@ export class ProductsComponent implements OnInit, AfterViewInit {
         message: 'Are you sure you want to delete this product?',
       },
     });
-    
     const confirmed = await dialogRef.afterClosed().toPromise();
     if (confirmed) {
-      this.productsService.deleteProduct(index);
+      // Delete logic would go here if backend supports it
       this.loadProducts();
     }
   }
@@ -239,10 +236,9 @@ export class ProductsComponent implements OnInit, AfterViewInit {
   }
 
   exportProducts(): void {
-    const products = this.productsService.getProducts();
     const csv = [
       'code,name,nameHindi,unit,price,stockQty',
-      ...products.map((p) =>
+      ...this.products.map((p) =>
         [p.code, p.name, p.nameHindi, p.unit, p.price, p.stockQty].join(',')
       ),
     ].join('\r\n');

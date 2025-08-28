@@ -18,8 +18,15 @@ export class InvoiceComponent {
   ];
 
   constructor(private invoiceService: InvoiceService) {
-    this.invoices = this.invoiceService.getInvoices();
-    console.log(this.invoices);
-    
+    this.invoiceService.getInvoices().subscribe({
+      next: (data) => {
+        this.invoices = data;
+        console.log(this.invoices);
+      },
+      error: (err) => {
+        console.error('Failed to fetch invoices:', err);
+      }
+    });
   }
+
 }

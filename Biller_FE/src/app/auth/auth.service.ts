@@ -1,26 +1,39 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, of } from 'rxjs';
+import { tap, catchError, map } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private isLoggedInStatus = false;
+  private apiUrl = 'http://localhost:3000/api/auth/login'; // Change port if needed
 
-  login(username: string, password: string): boolean {
-    if (username === 'Nilesh' && password === '12345') {
-      this.isLoggedInStatus = true;
-      localStorage.setItem('isLoggedIn', 'true');
-      return true;
-    }
-    this.isLoggedInStatus = false;
-    localStorage.removeItem('isLoggedIn');
-    return false;
+  constructor(private http: HttpClient) {}
+
+  login(username: string, password: string): Observable<boolean> {
+    return this.http.post<{ token: string }>(this.apiUrl, { username, password }).pipe(
+      tap(response => {
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('isLoggedIn', 'true');
+      }),
+      map(() => true),
+      catchError(() => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('isLoggedIn');
+        return of(false);
+      })
+    );
   }
 
   logout() {
-    this.isLoggedInStatus = false;
+    localStorage.removeItem('token');
     localStorage.removeItem('isLoggedIn');
   }
 
   isLoggedIn(): boolean {
-    return this.isLoggedInStatus || localStorage.getItem('isLoggedIn') === 'true';
+    return localStorage.getItem('isLoggedIn') === 'true';
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem('token');
   }
 }

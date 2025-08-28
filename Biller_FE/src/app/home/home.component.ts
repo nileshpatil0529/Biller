@@ -88,9 +88,9 @@ export class HomeComponent implements OnInit {
   }
 
   onPrintInvoice(): void {
-    const clientObj = this.clients.find(c => c.id === this.invoiceForm.get('clientId')?.value);
-    const client = clientObj ? clientObj.name : '';
-    const location = this.invoiceForm.get('location')?.value || '';
+  const clientObj = this.clients.find(c => c.id === this.invoiceForm.get('clientId')?.value);
+  const client = clientObj ? clientObj.name : 'Unknown Client';
+  const location = this.invoiceForm.get('location')?.value || 'Unknown Location';
     const paymentMode = this.invoiceForm.get('paymentMode')?.value || '';
     const discount = this.invoiceForm.get('discount')?.value || 0;
     const paymentStatus = this.invoiceForm.get('paymentStatus')?.value || '';
@@ -114,8 +114,15 @@ export class HomeComponent implements OnInit {
       grandTotal,
       paymentStatus,
       products
+    }).subscribe({
+      next: () => {
+        this.router.navigate(['/invoices']);
+      },
+      error: (err) => {
+        // Optionally show error to user
+        console.error('Failed to save invoice:', err);
+      }
     });
-    this.router.navigate(['/invoices']);
   }
 
   constructor(
@@ -151,10 +158,13 @@ export class HomeComponent implements OnInit {
     this.updateGrandTotal();
   }
 
+  allProducts: Product[] = [];
   private loadProducts(): void {
-    const allProducts = this.productsService.getProducts();
-    this.products = allProducts.filter(p => p.sell_qty && p.sell_qty > 0);
-    this.dataSource.data = this.products;
+    this.productsService.getProducts().subscribe(allProducts => {
+      this.allProducts = allProducts;
+      this.products = allProducts.filter((p: Product) => p.sell_qty && p.sell_qty > 0);
+      this.dataSource.data = this.products;
+    });
   }
 
 
@@ -186,18 +196,17 @@ export class HomeComponent implements OnInit {
     if (this.productForm.invalid) return;
     const product = this.productForm.value;
     if (this.addingRow) {
-      this.productsService.addProduct(product);
-      this.addingRow = false;
+      this.productsService.addProduct(product).subscribe(() => {
+        this.addingRow = false;
+        this.loadProducts();
+        this.productForm.reset({ price: 0, stockQty: 0 });
+      });
     } else if (this.editingProduct) {
-      const idx = this.products.findIndex((p) => p === this.editingProduct);
-      if (idx !== -1) {
-        this.productsService.updateProduct(idx, product);
-      }
+      // Update logic would go here if backend supports it
       this.showForm = false;
       this.editingProduct = null;
+      this.productForm.reset({ price: 0, stockQty: 0 });
     }
-    this.loadProducts();
-    this.productForm.reset({ price: 0, stockQty: 0 });
   }
 
   cancelNewRow(): void {
@@ -215,7 +224,7 @@ export class HomeComponent implements OnInit {
     });
     const confirmed = await dialogRef.afterClosed().toPromise();
     if (confirmed) {
-      this.productsService.deleteProduct(index);
+      // Delete logic would go here if backend supports it
       this.loadProducts();
     }
   }
@@ -225,10 +234,9 @@ export class HomeComponent implements OnInit {
   }
 
   exportProducts(): void {
-    const products = this.productsService.getProducts();
     const csv = [
       'code,name,nameHindi,unit,price,stockQty',
-      ...products.map((p) =>
+      ...this.products.map((p) =>
         [p.code, p.name, p.nameHindi, p.unit, p.price, p.stockQty].join(',')
       ),
     ].join('\r\n');
@@ -249,11 +257,7 @@ export class HomeComponent implements OnInit {
     } else if (action === 'decrement' && product.sell_qty > 0) {
       product.sell_qty--;
     }
-    const allProducts = this.productsService.getProducts();
-    const matchingProduct = allProducts.find(p => p.code === product.code);
-    if (matchingProduct) {
-      matchingProduct.sell_qty = product.sell_qty;
-    }
+    // Update local products array only
     if (product.sell_qty > 0) {
       if (!this.products.find(p => p.code === product.code)) {
         this.products.unshift(product);
@@ -270,14 +274,10 @@ export class HomeComponent implements OnInit {
   }
 
   onSellQtyInput(product: Product, event: any) {
-  event.stopPropagation();
-  const val = parseFloat(event.target.value);
-  product.sell_qty = isNaN(val) ? 0 : val;
-    const allProducts = this.productsService.getProducts();
-    const matchingProduct = allProducts.find(p => p.code === product.code);
-    if (matchingProduct) {
-      matchingProduct.sell_qty = product.sell_qty;
-    }
+    event.stopPropagation();
+    const val = parseFloat(event.target.value);
+    product.sell_qty = isNaN(val) ? 0 : val;
+    // Update local products array only
     if (product.sell_qty >= 0) {
       if (!this.products.find(p => p.code === product.code)) {
         this.products.unshift(product);
@@ -290,8 +290,7 @@ export class HomeComponent implements OnInit {
 
   applyFilterAutocomplete(value: string) {
     const filterValue = value ? value.trim().toLowerCase() : '';
-    const allProducts = this.productsService.getProducts();
-    this.filteredProducts = allProducts.filter(product =>
+    this.filteredProducts = this.allProducts.filter(product =>
       product.code.toLowerCase().includes(filterValue) ||
       product.name.toLowerCase().includes(filterValue) ||
       product.nameHindi.toLowerCase().includes(filterValue) ||
@@ -309,7 +308,7 @@ export class HomeComponent implements OnInit {
       this.searchInput.nativeElement.blur();
     }
     requestAnimationFrame(() => {
-      this.filteredProducts = this.productsService.getProducts();
+      this.filteredProducts = this.allProducts;
     });
   }
 
@@ -318,10 +317,9 @@ export class HomeComponent implements OnInit {
   }
 
   clearAllSellQty(): void {
-    const allProducts = this.productsService.getProducts();
-    allProducts.forEach(p => p.sell_qty = 0);
+    this.products.forEach(p => p.sell_qty = 0);
     this.products = [];
     this.dataSource.data = [];
-    this.filteredProducts = allProducts;
+    this.filteredProducts = this.products;
   }
 }

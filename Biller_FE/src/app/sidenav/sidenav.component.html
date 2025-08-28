@@ -14,6 +14,14 @@
         </a>
         <mat-divider></mat-divider>
       </ng-container>
+      <!-- Logout Button -->
+      <a mat-list-item (click)="logout()" [class.collapsed-link]="collapsed">
+        <span class="sidenav-menu-flex">
+          <mat-icon class="menu-icon">logout</mat-icon>
+          <span *ngIf="!collapsed">Logout</span>
+        </span>
+      </a>
+      <mat-divider></mat-divider>
     </mat-nav-list>
   </mat-sidenav>
   <mat-sidenav-content class="sidenav-content">

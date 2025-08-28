@@ -31,41 +31,56 @@ import { MatMenuModule } from '@angular/material/menu';
 import { ConfirmDialogComponent } from './shared/confirm-dialog.component';
 import { InvoiceComponent } from './invoice/invoice.component';
 import { InvoiceService } from './invoice/invoice.service';
+import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { AuthInterceptor } from './shared/auth.interceptor';
 
 @NgModule({
-			 declarations: [
-				 AppComponent,
-				 LoginComponent,
-				 SidenavComponent,
-				 UsersComponent,
-				 ProductsComponent,
-				 ConfirmDialogComponent,
-				 HomeComponent,
-				 InvoiceComponent
-			 ],
-			 imports: [
-				 BrowserModule,
-				 AppRoutingModule,
-				 FormsModule,
-				 ReactiveFormsModule,
-				 BrowserAnimationsModule,
-				 MatInputModule,
-				 MatFormFieldModule,
-				 MatSelectModule,
-				 MatButtonModule,
-				 MatCardModule,
-				 MatSidenavModule,
-				 MatListModule,
-				 MatToolbarModule,
-				 MatIconModule,
-				 MatTableModule,
-				 MatPaginatorModule,
-				 MatDialogModule,
-				 MatMenuModule,
-				 MatAutocompleteModule,
-				 MatOptionModule
-			 ],
-	providers: [AuthService, AuthGuard, ProductsService, InvoiceService],
+	declarations: [
+		AppComponent,
+		LoginComponent,
+		SidenavComponent,
+		UsersComponent,
+		ProductsComponent,
+		ConfirmDialogComponent,
+		HomeComponent,
+		InvoiceComponent
+	],
+	imports: [
+		BrowserModule,
+		AppRoutingModule,
+		FormsModule,
+		ReactiveFormsModule,
+		BrowserAnimationsModule,
+		MatInputModule,
+		MatFormFieldModule,
+		MatSelectModule,
+		MatButtonModule,
+		MatCardModule,
+		MatSidenavModule,
+		MatListModule,
+		MatToolbarModule,
+		MatIconModule,
+		MatTableModule,
+		MatPaginatorModule,
+		MatDialogModule,
+		MatMenuModule,
+		MatAutocompleteModule,
+		MatOptionModule,
+		HttpClientModule
+	],
+	providers: [
+		AuthService,
+		AuthGuard,
+		ProductsService,
+		InvoiceService,
+		{
+			provide: HTTP_INTERCEPTORS,
+			useClass: AuthInterceptor,
+			multi: true
+		}
+	],
+
 	bootstrap: [AppComponent]
 })
 export class AppModule { }

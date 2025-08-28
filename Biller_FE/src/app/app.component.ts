@@ -8,7 +8,14 @@ import { Router } from '@angular/router';
 })
 export class AppComponent {
   title = 'Biller_FE';
-  constructor(public router: Router) {}
+  constructor(public router: Router) {
+    // Auto-login if token exists
+    if (localStorage.getItem('isLoggedIn') === 'true' && localStorage.getItem('token')) {
+      if (this.router.url === '/login' || this.router.url === '/') {
+        this.router.navigate(['/home']);
+      }
+    }
+  }
   isLoginRoute() {
     return this.router.url === '/login';
   }

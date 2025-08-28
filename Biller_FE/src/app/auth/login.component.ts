@@ -22,10 +22,12 @@ export class LoginComponent {
 
   onSubmit() {
     const { username, password } = this.loginForm.value;
-    if (this.authService.login(username, password)) {
-      this.router.navigate(['/home']);
-    } else {
-      this.error = 'Invalid username or password';
-    }
+    this.authService.login(username, password).subscribe(success => {
+      if (success) {
+        this.router.navigate(['/home']);
+      } else {
+        this.error = 'Invalid username or password';
+      }
+    });
   }
 }

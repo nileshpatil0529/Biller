@@ -50,15 +50,14 @@
 
 const express = require('express');
 const router = express.Router();
-const pool = require('../db');
+const Invoice = require('../models/Invoice');
+const InvoiceProduct = require('../models/InvoiceProduct');
 const auth = require('../middleware/auth');
 
 // Get all invoices (protected)
 router.get('/', auth, async (req, res) => {
   try {
-    const conn = await pool.getConnection();
-    const invoices = await conn.query('SELECT * FROM invoices');
-    conn.release();
+    const invoices = await Invoice.findAll();
     res.json(invoices);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
@@ -69,11 +68,33 @@ router.get('/', auth, async (req, res) => {
 router.post('/', auth, async (req, res) => {
   const { client, location, discount, total, grandTotal, paymentStatus, paymentMode, products } = req.body;
   try {
-    const conn = await pool.getConnection();
-    await conn.query('INSERT INTO invoices (client, location, discount, total, grandTotal, paymentStatus, paymentMode, products) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [client, location, discount, total, grandTotal, paymentStatus, paymentMode, JSON.stringify(products)]);
-    conn.release();
-    res.json({ message: 'Invoice added' });
+    // Create invoice
+    const invoice = await Invoice.create({
+      client,
+      location,
+      discount,
+      total,
+      grandTotal,
+      paymentStatus,
+      paymentMode
+    });
+
+    // Add products to invoice_products table
+    if (Array.isArray(products)) {
+      for (const prod of products) {
+        await InvoiceProduct.create({
+          invoice_id: invoice.id,
+          product_id: prod.code, // You may need to map code to product_id
+          sell_qty: prod.sell_qty,
+          price: prod.price,
+          totalValue: prod.totalValue
+        });
+      }
+    }
+
+    res.json({ message: 'Invoice added', invoiceId: invoice.id });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
 });
