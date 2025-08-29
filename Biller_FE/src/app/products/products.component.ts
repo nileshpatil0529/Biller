@@ -1,3 +1,5 @@
+// ...existing imports...
+// Remove duplicate class and misplaced code
 import { Component, OnInit, ViewChild, AfterViewInit, ElementRef } from '@angular/core';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
@@ -17,6 +19,59 @@ import { Router } from '@angular/router';
 })
 
 export class ProductsComponent implements OnInit, AfterViewInit {
+  importErrors: any[] = [];
+  // Import dialog properties
+  showImportForm = false;
+  importFile: File | null = null;
+
+  importProducts(): void {
+    this.showImportForm = true;
+    this.importFile = null;
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls') || file.name.endsWith('.csv')) {
+        this.importFile = file;
+      } else {
+        alert('Please select a valid Excel or CSV file (.xlsx, .xls, .csv)');
+        input.value = '';
+        this.importFile = null;
+      }
+    }
+  }
+
+  uploadImportFile(): void {
+    if (!this.importFile) {
+      alert('No file selected');
+      return;
+    }
+    const formData = new FormData();
+    formData.append('file', this.importFile);
+    this.productsService.uploadProductFile(formData).subscribe({
+      next: (res) => {
+        this.importErrors = [];
+        this.loadProducts();
+        // Do not close the import form or clear the file
+        // Optionally, you can show a success message in the UI if needed
+      },
+      error: (err) => {
+        if (err?.error?.errors) {
+          this.importErrors = err.error.errors;
+        } else {
+          this.importErrors = [{ row: '-', error: err?.error?.message || 'Unknown error', product: {} }];
+        }
+        // Do not close the import form or clear the file
+      }
+    });
+  }
+
+  cancelImport(): void {
+    this.showImportForm = false;
+    this.importFile = null;
+  }
   // Properties
   productSearch = '';
   products: Product[] = [];
@@ -180,6 +235,7 @@ export class ProductsComponent implements OnInit, AfterViewInit {
     // Insert a blank row at the top for editing
     this.products = [
       {
+        id: 0,
         code: '',
         name: '',
         nameHindi: '',
@@ -196,18 +252,25 @@ export class ProductsComponent implements OnInit, AfterViewInit {
 
   saveProduct(): void {
     if (this.productForm.invalid) return;
-    const product = this.productForm.value;
+    let product = this.productForm.value;
     if (this.addingRow) {
-      this.productsService.addProduct(product).subscribe(() => {
+      // Remove id if present
+      const { id, ...productPayload } = product;
+      this.productsService.addProduct(productPayload).subscribe(() => {
         this.addingRow = false;
         this.loadProducts();
         this.productForm.reset({ price: 0, stockQty: 0 });
       });
-    } else if (this.editingProduct) {
-      // Update logic would go here if backend supports it
-      this.showForm = false;
-      this.editingProduct = null;
-      this.productForm.reset({ price: 0, stockQty: 0 });
+    } else if (this.editingProduct && typeof this.editingProduct.id === 'number') {
+      // Use id for update (assumes editingProduct has id)
+      this.productsService.updateProduct(this.editingProduct.id, product).subscribe(() => {
+        this.showForm = false;
+        this.editingProduct = null;
+        this.loadProducts();
+        this.productForm.reset({ price: 0, stockQty: 0 });
+      });
+    } else {
+      alert('Cannot update: Product ID is missing.');
     }
   }
 
@@ -226,14 +289,20 @@ export class ProductsComponent implements OnInit, AfterViewInit {
     });
     const confirmed = await dialogRef.afterClosed().toPromise();
     if (confirmed) {
-      // Delete logic would go here if backend supports it
-      this.loadProducts();
+      const product = this.products[index];
+      if (product && product.id) {
+        this.productsService.deleteProduct(product.id).subscribe({
+          next: () => {
+            this.loadProducts();
+          },
+          error: (err) => {
+            alert('Failed to delete product: ' + (err?.error?.message || 'Unknown error'));
+          },
+        });
+      }
     }
   }
 
-  importProducts(): void {
-    alert('Import functionality has been disabled.');
-  }
 
   exportProducts(): void {
     const csv = [

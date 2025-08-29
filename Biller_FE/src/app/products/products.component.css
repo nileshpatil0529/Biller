@@ -1,11 +1,82 @@
+.no-bottom-margin {
+    margin-bottom: 0 !important;
+}
+.actions-btn {
+    min-width: 120px;
+    font-weight: 500;
+    font-size: 1rem;
+    box-shadow: 0 2px 8px rgba(25,118,210,0.08);
+    border-radius: 6px;
+}
+.import-flex {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 0;
+    margin-bottom: 0;
+}
+.import-card {
+    width: 400px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+.import-label {
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 8px;
+    display: block;
+}
+.import-file-input {
+    width: 100%;
+    margin-bottom: 16px;
+    padding: 8px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+.import-file-info {
+    margin-bottom: 12px;
+    color: #388e3c;
+    font-weight: 500;
+}
+.import-file-icon {
+    vertical-align: middle;
+    color: #388e3c;
+}
+/* Flex row for actions and search */
+.top-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+.top-bar-row > div {
+    display: flex;
+    align-items: center;
+}
+.search-field {
+    flex: 1;
+}
+/* Import dialog styles */
+.import-dialog mat-card {
+    margin: 0 !important;
+    padding: 24px 16px !important;
+    width: 100% !important;
+}
+.import-dialog mat-card-title {
+    margin-bottom: 12px;
+}
+
+.import-dialog mat-icon {
+    margin-right: 6px;
+}
 /* Autocomplete dropdown styling */
 ::ng-deep .mat-mdc-option.mdc-list-item--disabled {
-    opacity: 1 !important;
+    opacity: 1;
 }
 
 ::ng-deep .mat-mdc-option.mdc-list-item--disabled .mdc-list-item__primary-text {
-    color: rgba(0, 0, 0, 0.87) !important;
-    opacity: 1 !important;
+    color: rgba(0, 0, 0, 0.87);
+    opacity: 1;
 }
 
 ::ng-deep .mat-mdc-option.mdc-list-item--disabled:hover {

@@ -1,13 +1,14 @@
-<div class="container mt-2">
-  <div class="top-bar-row mt-3">
-  <button mat-raised-button color="primary" class="mb-4" [matMenuTriggerFor]="actionsMenu">
-      Actions <mat-icon>arrow_drop_down</mat-icon>
-    </button>
-    <mat-menu #actionsMenu="matMenu">
-      <button mat-menu-item (click)="addRow()">Add Row</button>
-      <button mat-menu-item (click)="importProducts()">Import</button>
-      <button mat-menu-item (click)="exportProducts()"> Export</button>
-    </mat-menu>
+  <div class="container mt-3">
+  <div class="top-bar-row no-bottom-margin">
+  <button mat-raised-button color="primary" class="mb-4 actions-btn" [matMenuTriggerFor]="actionsMenu">
+  <mat-icon style="vertical-align:middle;margin-right:6px;">more_vert</mat-icon>
+      Actions
+  </button>
+  <mat-menu #actionsMenu="matMenu">
+    <button mat-menu-item (click)="addRow()">Add Row</button>
+    <button mat-menu-item (click)="importProducts()">Import</button>
+    <button mat-menu-item (click)="exportProducts()"> Export</button>
+  </mat-menu>
     <mat-form-field appearance="outline" class="search-field">
       <mat-label>Search Products</mat-label>
       <input matInput type="text" [(ngModel)]="productSearch" (ngModelChange)="applyFilter($event)" placeholder="Type to search..." />
@@ -15,6 +16,46 @@
         <mat-icon>close</mat-icon>
       </button>
     </mat-form-field>
+  </div>
+  <div *ngIf="showImportForm" class="import-dialog import-flex">
+  <mat-card class="import-card">
+  <mat-card-title>Import Products from CSV</mat-card-title>
+      <mat-card-content>
+        <form>
+          <label class="import-label">Select CSV File</label>
+          <input type="file" accept=".csv" (change)="onFileSelected($event)" class="import-file-input" />
+          <div *ngIf="importFile" class="import-file-info">
+            <mat-icon class="import-file-icon">check_circle</mat-icon>
+            Selected file: {{ importFile.name }}
+          </div>
+        </form>
+      </mat-card-content>
+      <div *ngIf="importErrors.length > 0" class="import-error-table">
+        <h4 style="color: #b71c1c; margin-top: 12px;">Import Errors</h4>
+        <table class="mat-elevation-z2" style="width:100%;margin-bottom:12px;">
+          <thead>
+            <tr>
+              <th>Row</th>
+              <th>Error</th>
+              <th>Product Data</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let err of importErrors">
+              <td>{{ err.row }}</td>
+              <td>{{ err.error }}</td>
+              <td>{{ err.product | json }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <mat-card-actions style="display: flex; justify-content: flex-end; gap: 12px;">
+  <button mat-raised-button color="primary" (click)="uploadImportFile()" [disabled]="!importFile" style="min-width: 100px;">Upload</button>
+        <button mat-icon-button color="warn" (click)="cancelImport()" matTooltip="Cancel">
+          <mat-icon>cancel</mat-icon>
+        </button>
+      </mat-card-actions>
+    </mat-card>
   </div>
   <table mat-table [dataSource]="dataSource" class="mat-elevation-z2 w-100 products-table">
   <ng-container matColumnDef="code">
@@ -24,7 +65,10 @@
             (addingRow && i === 0) || (showForm && editingProduct === product);
             else showCode
           " [formGroup]="productForm" class="d-inline">
-          <input matInput formControlName="code" class="form-control form-control-sm" />
+          <mat-form-field appearance="outline" style="width:120px; margin-right:8px;">
+            <mat-label>Product Code</mat-label>
+            <input matInput formControlName="code" />
+          </mat-form-field>
         </form>
         <ng-template #showCode>{{ product.code }}</ng-template>
       </td>
@@ -36,7 +80,10 @@
             (addingRow && i === 0) || (showForm && editingProduct === product);
             else showName
           " [formGroup]="productForm" class="d-inline">
-          <input matInput formControlName="name" class="form-control form-control-sm" />
+          <mat-form-field appearance="outline" style="width:160px; margin-right:8px;">
+            <mat-label>Product Name (Eng)</mat-label>
+            <input matInput formControlName="name" />
+          </mat-form-field>
         </form>
         <ng-template #showName>{{ product.name }}</ng-template>
       </td>
@@ -48,7 +95,10 @@
             (addingRow && i === 0) || (showForm && editingProduct === product);
             else showNameHindi
           " [formGroup]="productForm" class="d-inline">
-          <input matInput formControlName="nameHindi" class="form-control form-control-sm" />
+          <mat-form-field appearance="outline" style="width:120px; margin-right:8px;">
+            <mat-label>Product Name (Hindi)</mat-label>
+            <input matInput formControlName="nameHindi" />
+          </mat-form-field>
         </form>
         <ng-template #showNameHindi>{{ product.nameHindi }}</ng-template>
       </td>
@@ -60,10 +110,13 @@
             (addingRow && i === 0) || (showForm && editingProduct === product);
             else showUnit
           " [formGroup]="productForm" class="d-inline">
-          <select matInput formControlName="unit" class="form-control form-control-sm">
-            <option value="">Select Unit</option>
-            <option *ngFor="let u of units" [value]="u">{{ u }}</option>
-          </select>
+          <mat-form-field appearance="outline" style="width:80px; margin-right:8px;">
+            <mat-label>Unit</mat-label>
+            <mat-select formControlName="unit">
+              <mat-option value="">Select Unit</mat-option>
+              <mat-option *ngFor="let u of units" [value]="u">{{ u }}</mat-option>
+            </mat-select>
+          </mat-form-field>
         </form>
         <ng-template #showUnit>{{ product.unit }}</ng-template>
       </td>
@@ -75,7 +128,10 @@
             (addingRow && i === 0) || (showForm && editingProduct === product);
             else showPrice
           " [formGroup]="productForm" class="d-inline">
-          <input matInput type="number" formControlName="price" class="form-control form-control-sm" />
+          <mat-form-field appearance="outline" style="width:80px; margin-right:8px;">
+            <mat-label>Price</mat-label>
+            <input matInput type="number" formControlName="price" />
+          </mat-form-field>
         </form>
         <ng-template #showPrice>{{ product.price }}</ng-template>
       </td>
@@ -87,7 +143,10 @@
             (addingRow && i === 0) || (showForm && editingProduct === product);
             else showStock
           " [formGroup]="productForm" class="d-inline">
-          <input matInput type="number" formControlName="stockQty" class="form-control form-control-sm" />
+          <mat-form-field appearance="outline" style="width:80px; margin-right:8px;">
+            <mat-label>Stock Qty</mat-label>
+            <input matInput type="number" formControlName="stockQty" />
+          </mat-form-field>
         </form>
         <ng-template #showStock>{{ product.stockQty }}</ng-template>
       </td>

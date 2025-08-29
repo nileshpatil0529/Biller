@@ -150,6 +150,7 @@ body.dark-theme .search-field.mat-form-field {
     display: flex;
     align-items: center;
     gap: 18px;
+    margin-top: 0;
 }
 .top-bar-row > div {
     display: flex;

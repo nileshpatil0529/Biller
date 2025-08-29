@@ -1,4 +1,4 @@
-<div class="container mt-2">
+<div class="container mt-3">
   <!-- ...existing code... -->
   <form *ngIf="showInvoiceForm" [formGroup]="invoiceForm">
     <mat-card>
@@ -57,7 +57,7 @@
       </mat-card-content>
     </mat-card>
   </form>
-  <div class="top-bar-row mt-3" *ngIf="!showInvoiceForm">
+  <div class="top-bar-row" *ngIf="!showInvoiceForm">
     <!-- Options button dropdown removed -->
     <mat-form-field appearance="outline" class="search-field">
       <mat-label>Search Products</mat-label>

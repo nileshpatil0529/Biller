@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 
 export interface Product {
+  id?: number;
   code: string;
   name: string;
   nameHindi: string;
@@ -15,6 +16,11 @@ export interface Product {
 
 @Injectable({ providedIn: 'root' })
 export class ProductsService {
+  uploadProductFile(formData: FormData): Observable<any> {
+    return this.http.post<any>(this.apiUrl + '/upload', formData, {
+      headers: this.getAuthHeaders()
+    });
+  }
   private apiUrl = 'http://localhost:3000/api/products';
 
   constructor(private http: HttpClient, private authService: AuthService) {}
@@ -28,9 +34,17 @@ export class ProductsService {
     return this.http.get<Product[]>(this.apiUrl, { headers: this.getAuthHeaders() });
   }
 
-  addProduct(product: Product): Observable<any> {
-    return this.http.post(this.apiUrl, product, { headers: this.getAuthHeaders() });
+  addProduct(product: Product | Product[]): Observable<any> {
+    // Accepts single product or array
+    const payload = Array.isArray(product) ? product : [product];
+    return this.http.post(this.apiUrl, payload, { headers: this.getAuthHeaders() });
   }
 
-  // For update and delete, you may need to implement corresponding backend endpoints
+  updateProduct(id: number, product: Product): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}`, product, { headers: this.getAuthHeaders() });
+  }
+
+  deleteProduct(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`, { headers: this.getAuthHeaders() });
+  }
 }
