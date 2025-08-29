@@ -17,15 +17,21 @@ import { SnackbarComponent } from '../shared/snackbar.component';
   styleUrls: ['./products.component.css'],
 })
 
-export class ProductsComponent implements OnInit, AfterViewInit {
+export class ProductsComponent implements OnInit {
   // All variable declarations at the top
   importErrors: any[] = [];
   showImportForm = false;
   importFile: File | null = null;
   productSearch = '';
   products: Product[] = [];
-  filteredProducts: Product[] = [];
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  private _paginator!: MatPaginator;
+  @ViewChild(MatPaginator)
+  set paginator(p: MatPaginator) {
+    this._paginator = p;
+    if (this.dataSource) {
+      this.dataSource.paginator = p;
+    }
+  }
   dataSource = new MatTableDataSource<Product>();
   pageSize = 10;
   pageSizeOptions = [5, 10, 20, 30];
@@ -121,7 +127,6 @@ export class ProductsComponent implements OnInit, AfterViewInit {
     this.productsService.getProducts().subscribe(products => {
       this.products = products;
       this.updateDataSource();
-      this.filteredProducts = products;
     });
   }
 
@@ -130,16 +135,12 @@ export class ProductsComponent implements OnInit, AfterViewInit {
     this.dataSource.data = this.products;
     if (this.paginator) this.dataSource.paginator = this.paginator;
   }
-  applyFilterAutocomplete(value: string) {
-    const filterValue = value ? value.trim().toLowerCase() : '';
-    this.filteredProducts = this.products.filter(product => product.name.toLowerCase().includes(filterValue));
-  }
 
   /** Opens the edit form for a product */
   openForm(product: Product): void {
-    this.editingProduct = product;
-    this.showForm = true;
-    this.productForm.setValue(product);
+  this.editingProduct = product;
+  this.showForm = true;
+  this.productForm.patchValue(product);
   }
 
   /** Closes the edit form */
@@ -150,11 +151,9 @@ export class ProductsComponent implements OnInit, AfterViewInit {
   }
 
   clearFilterAutocomplete() {
-    this.productSearch = '';
-    this.filteredProducts = [];
-    this.autocompleteTrigger?.closePanel();
-    this.searchInput?.nativeElement?.blur();
-    requestAnimationFrame(() => { this.filteredProducts = this.products; });
+  this.productSearch = '';
+  this.autocompleteTrigger?.closePanel();
+  this.searchInput?.nativeElement?.blur();
   }
 
   applyFilter(value: string) {
@@ -177,10 +176,6 @@ export class ProductsComponent implements OnInit, AfterViewInit {
     }
   }
 
-  ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
-  }
-
   onMatPage(event: PageEvent): void {
     this.pageSize = event.pageSize;
     if (this.paginator) this.dataSource.paginator = this.paginator;
@@ -200,17 +195,28 @@ export class ProductsComponent implements OnInit, AfterViewInit {
     const product = this.productForm.value;
     if (this.addingRow) {
       const { id, ...productPayload } = product;
-      this.productsService.addProduct(productPayload).subscribe(() => {
-        this.addingRow = false;
-        this.loadProducts();
-        this.productForm.reset({ price: 0, stockQty: 0 });
+      this.productsService.addProduct(productPayload).subscribe({
+        next: () => {
+          this.addingRow = false;
+          this.loadProducts();
+          this.productForm.reset({ price: 0, stockQty: 0 });
+          this.showSnackbar('Product added successfully', 'success');
+        },
+        error: (err) => {
+          this.showSnackbar('Failed to add product: ' + (err?.error?.message || 'Unknown error'), 'error');
+        }
       });
     } else if (this.editingProduct?.id != null) {
-      this.productsService.updateProduct(this.editingProduct.id, product).subscribe(() => {
-        this.showForm = false;
-        this.editingProduct = null;
-        this.loadProducts();
-        this.productForm.reset({ price: 0, stockQty: 0 });
+      this.productsService.updateProduct(this.editingProduct.id, product).subscribe({
+        next: () => {
+          this.showForm = false;
+          this.editingProduct = null;
+          this.loadProducts();
+          this.productForm.reset({ price: 0, stockQty: 0 });
+        },
+        error: (err) => {
+          this.showSnackbar('Failed to update product: ' + (err?.error?.message || 'Unknown error'), 'error');
+        }
       });
     } else {
       this.showSnackbar('Cannot update: Product ID is missing.', 'error');
