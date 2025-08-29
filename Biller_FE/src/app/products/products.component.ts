@@ -10,6 +10,8 @@ import { ConfirmDialogComponent } from '../shared/confirm-dialog.component';
 import { ProductsService } from './products.service';
 import type { Product } from './products.service';
 import { Router } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { SnackbarComponent } from '../shared/snackbar.component';
 
 
 @Component({
@@ -36,7 +38,7 @@ export class ProductsComponent implements OnInit, AfterViewInit {
       if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls') || file.name.endsWith('.csv')) {
         this.importFile = file;
       } else {
-        alert('Please select a valid Excel or CSV file (.xlsx, .xls, .csv)');
+        this.showSnackbar('Please select a valid Excel or CSV file (.xlsx, .xls, .csv)', 'error');
         input.value = '';
         this.importFile = null;
       }
@@ -45,7 +47,8 @@ export class ProductsComponent implements OnInit, AfterViewInit {
 
   uploadImportFile(): void {
     if (!this.importFile) {
-      alert('No file selected');
+      this.showSnackbar('No file selected', 'error');
+      this.importErrors = [];
       return;
     }
     const formData = new FormData();
@@ -53,24 +56,28 @@ export class ProductsComponent implements OnInit, AfterViewInit {
     this.productsService.uploadProductFile(formData).subscribe({
       next: (res) => {
         this.importErrors = [];
+        this.importFile = null;
+        this.showImportForm = false;
         this.loadProducts();
-        // Do not close the import form or clear the file
-        // Optionally, you can show a success message in the UI if needed
+        this.showSnackbar('Products imported successfully', 'success');
       },
       error: (err) => {
+        this.importFile = null;
         if (err?.error?.errors) {
           this.importErrors = err.error.errors;
+          this.showSnackbar('Import failed: ' + (err?.error?.message || 'Validation errors'), 'error');
         } else {
           this.importErrors = [{ row: '-', error: err?.error?.message || 'Unknown error', product: {} }];
+          this.showSnackbar('Import failed: ' + (err?.error?.message || 'Unknown error'), 'error');
         }
-        // Do not close the import form or clear the file
       }
     });
   }
 
   cancelImport(): void {
-    this.showImportForm = false;
-    this.importFile = null;
+  this.showImportForm = false;
+  this.importFile = null;
+  this.importErrors = [];
   }
   // Properties
   productSearch = '';
@@ -79,7 +86,7 @@ export class ProductsComponent implements OnInit, AfterViewInit {
   
   // Table properties
   dataSource = new MatTableDataSource<Product>();
-  pageSize = 5;
+  pageSize = 10;
   pageSizeOptions = [5, 10, 20, 30];
   total = 0;
   displayedColumns: string[] = [
@@ -102,7 +109,8 @@ export class ProductsComponent implements OnInit, AfterViewInit {
     private fb: FormBuilder,
     private productsService: ProductsService,
     private dialog: MatDialog,
-    private router: Router
+    private router: Router,
+    private snackBar: MatSnackBar
   ) {
     this.productForm = this.fb.group({
       code: ['', Validators.required],
@@ -114,8 +122,36 @@ export class ProductsComponent implements OnInit, AfterViewInit {
     });
   }
 
+  private showSnackbar(message: string, type: 'success' | 'error' | 'warning' = 'success', duration: number = 3000) {
+    let panelClass = '';
+    switch (type) {
+      case 'success':
+        panelClass = 'snackbar-success';
+        break;
+      case 'error':
+        panelClass = 'snackbar-error';
+        break;
+      case 'warning':
+        panelClass = 'snackbar-warning';
+        break;
+      default:
+        panelClass = 'snackbar-success';
+    }
+    this.snackBar.openFromComponent(SnackbarComponent, {
+      data: { message, class: panelClass },
+      duration,
+      horizontalPosition: 'center',
+      verticalPosition: 'top',
+      panelClass: [panelClass]
+    });
+  }
+
   ngOnInit(): void {
     this.loadProducts();
+    this.dataSource.filterPredicate = (data: Product, filter: string) => {
+      const filterValue = filter.trim().toLowerCase();
+      return data.name.toLowerCase().includes(filterValue);
+    };
   }
 
   private loadProducts(): void {
@@ -127,8 +163,11 @@ export class ProductsComponent implements OnInit, AfterViewInit {
   }
 
   private updateDataSource(): void {
-  this.total = this.products.length;
-  this.dataSource.data = this.products;
+    this.total = this.products.length;
+    this.dataSource.data = this.products;
+    if (this.paginator) {
+      this.dataSource.paginator = this.paginator;
+    }
   }
   applyFilterAutocomplete(value: string) {
     const filterValue = value ? value.trim().toLowerCase() : '';
@@ -183,18 +222,13 @@ export class ProductsComponent implements OnInit, AfterViewInit {
     }
   
       applyFilter(value: string) {
-    const filterValue = value ? value.trim().toLowerCase() : '';
-    this.dataSource.data = this.products.filter((product: Product) =>
-      product.code.toLowerCase().includes(filterValue) ||
-      product.name.toLowerCase().includes(filterValue) ||
-      product.nameHindi.toLowerCase().includes(filterValue) ||
-      product.unit.toLowerCase().includes(filterValue)
-    );
+  const filterValue = value ? value.trim().toLowerCase() : '';
+  this.dataSource.filter = filterValue;
   }
 
   clearSearch() {
-    this.productSearch = '';
-    this.dataSource.data = this.products;
+  this.productSearch = '';
+  this.dataSource.filter = '';
   }
 
   private focusAndSelectSearchInput() {
@@ -225,6 +259,9 @@ export class ProductsComponent implements OnInit, AfterViewInit {
 
   onMatPage(event: PageEvent): void {
     this.pageSize = event.pageSize;
+    if (this.paginator) {
+      this.dataSource.paginator = this.paginator;
+    }
   }
 
   addRow(): void {
@@ -270,7 +307,7 @@ export class ProductsComponent implements OnInit, AfterViewInit {
         this.productForm.reset({ price: 0, stockQty: 0 });
       });
     } else {
-      alert('Cannot update: Product ID is missing.');
+      this.showSnackbar('Cannot update: Product ID is missing.', 'error');
     }
   }
 
@@ -294,9 +331,10 @@ export class ProductsComponent implements OnInit, AfterViewInit {
         this.productsService.deleteProduct(product.id).subscribe({
           next: () => {
             this.loadProducts();
+            this.showSnackbar('Product deleted successfully', 'success');
           },
           error: (err) => {
-            alert('Failed to delete product: ' + (err?.error?.message || 'Unknown error'));
+            this.showSnackbar('Failed to delete product: ' + (err?.error?.message || 'Unknown error'), 'error');
           },
         });
       }

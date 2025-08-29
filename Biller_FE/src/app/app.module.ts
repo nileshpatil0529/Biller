@@ -34,6 +34,7 @@ import { InvoiceService } from './invoice/invoice.service';
 import { HttpClientModule } from '@angular/common/http';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthInterceptor } from './shared/auth.interceptor';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 @NgModule({
 	declarations: [
@@ -67,7 +68,8 @@ import { AuthInterceptor } from './shared/auth.interceptor';
 		MatMenuModule,
 		MatAutocompleteModule,
 		MatOptionModule,
-		HttpClientModule
+		HttpClientModule,
+		MatSnackBarModule
 	],
 	providers: [
 		AuthService,

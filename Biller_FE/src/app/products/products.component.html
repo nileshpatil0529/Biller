@@ -31,22 +31,18 @@
         </form>
       </mat-card-content>
       <div *ngIf="importErrors.length > 0" class="import-error-table">
-        <h4 style="color: #b71c1c; margin-top: 12px;">Import Errors</h4>
-        <table class="mat-elevation-z2" style="width:100%;margin-bottom:12px;">
-          <thead>
-            <tr>
-              <th>Row</th>
-              <th>Error</th>
-              <th>Product Data</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let err of importErrors">
-              <td>{{ err.row }}</td>
-              <td>{{ err.error }}</td>
-              <td>{{ err.product | json }}</td>
-            </tr>
-          </tbody>
+        <h4>Import Errors</h4>
+        <table mat-table [dataSource]="importErrors" class="mat-elevation-z2 w-100">
+          <ng-container matColumnDef="row">
+            <th mat-header-cell *matHeaderCellDef>Row</th>
+            <td mat-cell *matCellDef="let err">{{ err.row }}</td>
+          </ng-container>
+          <ng-container matColumnDef="error">
+            <th mat-header-cell *matHeaderCellDef>Error</th>
+            <td mat-cell *matCellDef="let err">{{ err.error }}</td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="['row', 'error']"></tr>
+          <tr mat-row *matRowDef="let row; columns: ['row', 'error']"></tr>
         </table>
       </div>
       <mat-card-actions style="display: flex; justify-content: flex-end; gap: 12px;">
