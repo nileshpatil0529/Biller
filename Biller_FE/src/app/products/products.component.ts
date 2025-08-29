@@ -1,5 +1,3 @@
-// ...existing imports...
-// Remove duplicate class and misplaced code
 import { Component, OnInit, ViewChild, AfterViewInit, ElementRef } from '@angular/core';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
@@ -13,7 +11,6 @@ import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SnackbarComponent } from '../shared/snackbar.component';
 
-
 @Component({
   selector: 'app-products',
   templateUrl: './products.component.html',
@@ -21,89 +18,27 @@ import { SnackbarComponent } from '../shared/snackbar.component';
 })
 
 export class ProductsComponent implements OnInit, AfterViewInit {
+  // All variable declarations at the top
   importErrors: any[] = [];
-  // Import dialog properties
   showImportForm = false;
   importFile: File | null = null;
-
-  importProducts(): void {
-    this.showImportForm = true;
-    this.importFile = null;
-  }
-
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      const file = input.files[0];
-      if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls') || file.name.endsWith('.csv')) {
-        this.importFile = file;
-      } else {
-        this.showSnackbar('Please select a valid Excel or CSV file (.xlsx, .xls, .csv)', 'error');
-        input.value = '';
-        this.importFile = null;
-      }
-    }
-  }
-
-  uploadImportFile(): void {
-    if (!this.importFile) {
-      this.showSnackbar('No file selected', 'error');
-      this.importErrors = [];
-      return;
-    }
-    const formData = new FormData();
-    formData.append('file', this.importFile);
-    this.productsService.uploadProductFile(formData).subscribe({
-      next: (res) => {
-        this.importErrors = [];
-        this.importFile = null;
-        this.showImportForm = false;
-        this.loadProducts();
-        this.showSnackbar('Products imported successfully', 'success');
-      },
-      error: (err) => {
-        this.importFile = null;
-        if (err?.error?.errors) {
-          this.importErrors = err.error.errors;
-          this.showSnackbar('Import failed: ' + (err?.error?.message || 'Validation errors'), 'error');
-        } else {
-          this.importErrors = [{ row: '-', error: err?.error?.message || 'Unknown error', product: {} }];
-          this.showSnackbar('Import failed: ' + (err?.error?.message || 'Unknown error'), 'error');
-        }
-      }
-    });
-  }
-
-  cancelImport(): void {
-  this.showImportForm = false;
-  this.importFile = null;
-  this.importErrors = [];
-  }
-  // Properties
   productSearch = '';
   products: Product[] = [];
   filteredProducts: Product[] = [];
-  
-  // Table properties
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
   dataSource = new MatTableDataSource<Product>();
   pageSize = 10;
   pageSizeOptions = [5, 10, 20, 30];
   total = 0;
-  displayedColumns: string[] = [
-    'code',
-    'name',
-    'nameHindi',
-    'unit',
-    'price',
-    'stockQty',
-    'actions',
-  ];
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  displayedColumns: string[] = ['code', 'name', 'nameHindi', 'unit', 'price', 'stockQty', 'actions'];
+  units: string[] = ['pcs', 'box', 'kg', 'ltr', 'meter', 'dozen'];
   productForm: FormGroup;
   editingProduct: Product | null = null;
   showForm = false;
   addingRow = false;
-  units: string[] = ['pcs', 'box', 'kg', 'ltr', 'meter', 'dozen'];
+
+  @ViewChild('searchInput') searchInput!: ElementRef;
+  @ViewChild(MatAutocompleteTrigger) autocompleteTrigger!: MatAutocompleteTrigger;
 
   constructor(
     private fb: FormBuilder,
@@ -122,75 +57,89 @@ export class ProductsComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private showSnackbar(message: string, type: 'success' | 'error' | 'warning' = 'success', duration: number = 3000) {
-    let panelClass = '';
-    switch (type) {
-      case 'success':
-        panelClass = 'snackbar-success';
-        break;
-      case 'error':
-        panelClass = 'snackbar-error';
-        break;
-      case 'warning':
-        panelClass = 'snackbar-warning';
-        break;
-      default:
-        panelClass = 'snackbar-success';
+  ngOnInit(): void {
+    this.loadProducts();
+    this.dataSource.filterPredicate = (data: Product, filter: string) => data.name.toLowerCase().includes(filter.trim().toLowerCase());
+  }
+
+  // Methods below
+  importProducts(): void {
+    this.showImportForm = true;
+    this.importFile = null;
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file && file.name.match(/\.(xlsx|xls|csv)$/)) {
+      this.importFile = file;
+    } else {
+      this.showSnackbar('Please select a valid Excel or CSV file (.xlsx, .xls, .csv)', 'error');
+      if (input) input.value = '';
+      this.importFile = null;
     }
-    this.snackBar.openFromComponent(SnackbarComponent, {
-      data: { message, class: panelClass },
-      duration,
-      horizontalPosition: 'center',
-      verticalPosition: 'top',
-      panelClass: [panelClass]
+  }
+
+  uploadImportFile(): void {
+    if (!this.importFile) {
+      this.showSnackbar('No file selected', 'error');
+      this.importErrors = [];
+      return;
+    }
+    const formData = new FormData();
+    formData.append('file', this.importFile);
+    this.productsService.uploadProductFile(formData).subscribe({
+      next: () => {
+        this.importErrors = [];
+        this.importFile = null;
+        this.showImportForm = false;
+        this.loadProducts();
+        this.showSnackbar('Products imported successfully', 'success');
+      },
+      error: (err) => {
+        this.importFile = null;
+        this.importErrors = err?.error?.errors || [{ row: '-', error: err?.error?.message || 'Unknown error', product: {} }];
+        this.showSnackbar('Import failed: ' + (err?.error?.message || 'Unknown error'), 'error');
+      }
     });
   }
 
-  ngOnInit(): void {
-    this.loadProducts();
-    this.dataSource.filterPredicate = (data: Product, filter: string) => {
-      const filterValue = filter.trim().toLowerCase();
-      return data.name.toLowerCase().includes(filterValue);
-    };
+  cancelImport(): void {
+    this.showImportForm = false;
+    this.importFile = null;
+    this.importErrors = [];
+  }
+
+  private showSnackbar(message: string, type: 'success' | 'error' | 'warning' = 'success', duration: number = 3000) {
+    const panelClass = type === 'error' ? 'snackbar-error' : type === 'warning' ? 'snackbar-warning' : 'snackbar-success';
+    this.snackBar.openFromComponent(SnackbarComponent, {
+      data: { message, class: panelClass }, duration, horizontalPosition: 'center', verticalPosition: 'top', panelClass: [panelClass]
+    });
   }
 
   private loadProducts(): void {
     this.productsService.getProducts().subscribe(products => {
       this.products = products;
       this.updateDataSource();
-      this.filteredProducts = this.products;
+      this.filteredProducts = products;
     });
   }
 
   private updateDataSource(): void {
     this.total = this.products.length;
     this.dataSource.data = this.products;
-    if (this.paginator) {
-      this.dataSource.paginator = this.paginator;
-    }
+    if (this.paginator) this.dataSource.paginator = this.paginator;
   }
   applyFilterAutocomplete(value: string) {
     const filterValue = value ? value.trim().toLowerCase() : '';
-    this.filteredProducts = this.products.filter(product =>
-      product.code.toLowerCase().includes(filterValue) ||
-      product.name.toLowerCase().includes(filterValue) ||
-      product.nameHindi.toLowerCase().includes(filterValue) ||
-      product.unit.toLowerCase().includes(filterValue)
-    );
+    this.filteredProducts = this.products.filter(product => product.name.toLowerCase().includes(filterValue));
   }
 
   /** Opens the edit form for a product */
   openForm(product: Product): void {
     this.editingProduct = product;
     this.showForm = true;
-    this.productForm.setValue({
-      code: product.code,
-      name: product.name,
-      nameHindi: product.nameHindi,
-      unit: product.unit,
-      price: product.price,
-      stockQty: product.stockQty,
-    });
+    this.productForm.setValue(product);
   }
 
   /** Closes the edit form */
@@ -200,58 +149,33 @@ export class ProductsComponent implements OnInit, AfterViewInit {
     this.productForm.reset({ price: 0, stockQty: 0 });
   }
 
-  @ViewChild('searchInput') searchInput!: ElementRef;
-  @ViewChild(MatAutocompleteTrigger) autocompleteTrigger!: MatAutocompleteTrigger;
-
   clearFilterAutocomplete() {
     this.productSearch = '';
     this.filteredProducts = [];
-    
-    // Close panel and remove focus
-    if (this.autocompleteTrigger) {
-      this.autocompleteTrigger.closePanel();
-    }
-    if (this.searchInput && this.searchInput.nativeElement) {
-      this.searchInput.nativeElement.blur();
-    }
-    
-    // Reset products list after panel is closed
-    requestAnimationFrame(() => {
-      this.filteredProducts = this.products;
-    });
-    }
-  
-      applyFilter(value: string) {
-  const filterValue = value ? value.trim().toLowerCase() : '';
-  this.dataSource.filter = filterValue;
+    this.autocompleteTrigger?.closePanel();
+    this.searchInput?.nativeElement?.blur();
+    requestAnimationFrame(() => { this.filteredProducts = this.products; });
+  }
+
+  applyFilter(value: string) {
+    this.dataSource.filter = value ? value.trim().toLowerCase() : '';
   }
 
   clearSearch() {
-  this.productSearch = '';
-  this.dataSource.filter = '';
+    this.productSearch = '';
+    this.dataSource.filter = '';
   }
 
   private focusAndSelectSearchInput() {
-    if (this.searchInput && this.searchInput.nativeElement) {
-      const inputElement = this.searchInput.nativeElement as HTMLInputElement;
-      
-      // Focus the input
+    const inputElement = this.searchInput?.nativeElement as HTMLInputElement;
+    if (inputElement) {
       inputElement.focus();
-      
-      // If there's text in the input, select it
       setTimeout(() => {
-        if (this.productSearch) {
-          inputElement.select();
-        }
-        
-        // Open the autocomplete panel
-        if (this.autocompleteTrigger) {
-          this.autocompleteTrigger.openPanel();
-        }
+        if (this.productSearch) inputElement.select();
+        this.autocompleteTrigger?.openPanel();
       }, 0);
     }
   }
-  // ...existing code...
 
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
@@ -259,9 +183,7 @@ export class ProductsComponent implements OnInit, AfterViewInit {
 
   onMatPage(event: PageEvent): void {
     this.pageSize = event.pageSize;
-    if (this.paginator) {
-      this.dataSource.paginator = this.paginator;
-    }
+    if (this.paginator) this.dataSource.paginator = this.paginator;
   }
 
   addRow(): void {
@@ -269,37 +191,21 @@ export class ProductsComponent implements OnInit, AfterViewInit {
     this.addingRow = true;
     this.showForm = false;
     this.productForm.reset({ price: 0, stockQty: 0 });
-    // Insert a blank row at the top for editing
-    this.products = [
-      {
-        id: 0,
-        code: '',
-        name: '',
-        nameHindi: '',
-        unit: '',
-        price: 0,
-        stockQty: 0,
-      },
-      ...this.products
-    ];
-    this.dataSource.data = this.products;
-    this.total = this.products.length;
-    // Focus the first input if needed (handled by Angular)
+    this.products = [{ id: 0, code: '', name: '', nameHindi: '', unit: '', price: 0, stockQty: 0 }, ...this.products];
+    this.updateDataSource();
   }
 
   saveProduct(): void {
     if (this.productForm.invalid) return;
-    let product = this.productForm.value;
+    const product = this.productForm.value;
     if (this.addingRow) {
-      // Remove id if present
       const { id, ...productPayload } = product;
       this.productsService.addProduct(productPayload).subscribe(() => {
         this.addingRow = false;
         this.loadProducts();
         this.productForm.reset({ price: 0, stockQty: 0 });
       });
-    } else if (this.editingProduct && typeof this.editingProduct.id === 'number') {
-      // Use id for update (assumes editingProduct has id)
+    } else if (this.editingProduct?.id != null) {
       this.productsService.updateProduct(this.editingProduct.id, product).subscribe(() => {
         this.showForm = false;
         this.editingProduct = null;
@@ -319,36 +225,21 @@ export class ProductsComponent implements OnInit, AfterViewInit {
 
   async deleteProduct(index: number): Promise<void> {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      data: {
-        title: 'Delete Product',
-        message: 'Are you sure you want to delete this product?',
-      },
+      data: { title: 'Delete Product', message: 'Are you sure you want to delete this product?' }
     });
-    const confirmed = await dialogRef.afterClosed().toPromise();
-    if (confirmed) {
+    if (await dialogRef.afterClosed().toPromise()) {
       const product = this.products[index];
-      if (product && product.id) {
+      if (product?.id) {
         this.productsService.deleteProduct(product.id).subscribe({
-          next: () => {
-            this.loadProducts();
-            this.showSnackbar('Product deleted successfully', 'success');
-          },
-          error: (err) => {
-            this.showSnackbar('Failed to delete product: ' + (err?.error?.message || 'Unknown error'), 'error');
-          },
+          next: () => { this.loadProducts(); this.showSnackbar('Product deleted successfully', 'success'); },
+          error: (err) => { this.showSnackbar('Failed to delete product: ' + (err?.error?.message || 'Unknown error'), 'error'); },
         });
       }
     }
   }
 
-
   exportProducts(): void {
-    const csv = [
-      'code,name,nameHindi,unit,price,stockQty',
-      ...this.products.map((p) =>
-        [p.code, p.name, p.nameHindi, p.unit, p.price, p.stockQty].join(',')
-      ),
-    ].join('\r\n');
+    const csv = ['code,name,nameHindi,unit,price,stockQty', ...this.products.map(p => [p.code, p.name, p.nameHindi, p.unit, p.price, p.stockQty].join(','))].join('\r\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
