@@ -1,0 +1,7 @@
+<div class="settings-container">
+  <h3>Language Settings</h3>
+  <button mat-raised-button color="primary" (click)="toggleLanguage()">
+    {{ settings.getLanguage() === 'e' ? 'Switch to Marathi' : 'Switch to English' }}
+  </button>
+  <p>Current language: <b>{{ settings.getLanguage() === 'e' ? 'English' : 'Marathi' }}</b></p>
+</div>

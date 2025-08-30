@@ -37,16 +37,16 @@ import { AuthInterceptor } from './shared/auth.interceptor';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 @NgModule({
-	declarations: [
-		AppComponent,
-		LoginComponent,
-		SidenavComponent,
-		UsersComponent,
-		ProductsComponent,
-		ConfirmDialogComponent,
-		HomeComponent,
-		InvoiceComponent
-	],
+		declarations: [
+			AppComponent,
+			LoginComponent,
+			SidenavComponent,
+			UsersComponent,
+			ProductsComponent,
+			ConfirmDialogComponent,
+			HomeComponent,
+			InvoiceComponent,
+		],
 	imports: [
 		BrowserModule,
 		AppRoutingModule,

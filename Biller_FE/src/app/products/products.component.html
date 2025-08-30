@@ -69,7 +69,7 @@
   <form *ngIf="(addingRow && i === 0) || (showForm && editingProduct?.id === product.id); else showName" [formGroup]="productForm" class="d-inline">
           <input type="text" formControlName="name" placeholder="Product Name (Eng)" class="form-control form-control-sm d-inline-block" style="width:160px; margin-right:8px;" />
         </form>
-        <ng-template #showName>{{ product.name }}</ng-template>
+  <ng-template #showName>{{ product.name }}</ng-template>
       </td>
     </ng-container>
     <ng-container matColumnDef="unit">
