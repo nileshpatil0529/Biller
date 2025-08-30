@@ -6,7 +6,11 @@ import { NgClass } from '@angular/common';
   selector: 'app-snackbar',
   standalone: true,
   imports: [NgClass],
-  template: `<span [ngClass]="data.class">{{ data.message ! }}</span>`,
+  template: `
+    <div class="snackbar-top">
+      <span [ngClass]="data.class">{{ data.message }}</span>
+    </div>
+  `,
   styles: [`
     .snackbar-success { color: #43a047; }
     .snackbar-error { color: #e53935; }

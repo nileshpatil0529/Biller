@@ -1,7 +1,45 @@
+.add-user-btn {
+  margin-left: auto;
+}
+.user-form {
+  margin-bottom: 24px;
+}
+
+.user-form-fields {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.form-field {
+  min-width: 200px;
+  flex: 1;
+}
+.default-password-info {
+  margin-bottom: 18px;
+  font-size: 1rem;
+}
+.user-form-actions {
+  text-align: right;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
 /* Minimal style for no data message (shared with products table) */
 .no-data-message {
   text-align: center;
   color: #888;
   font-size: 1.1rem;
   padding: 24px 0;
+}
+
+.users-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.users-title {
+  margin: 0;
 }

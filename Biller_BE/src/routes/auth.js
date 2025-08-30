@@ -82,6 +82,10 @@ router.post('/register', async (req, res) => {
     const user = await User.create({ username, password: hash, role: role || 'user' });
     res.status(201).json({ message: 'User created', user: { id: user.id, username: user.username, role: user.role } });
   } catch (err) {
+    // Sequelize unique constraint error handling
+    if (err.name === 'SequelizeUniqueConstraintError') {
+      return res.status(400).json({ message: 'Username already exists' });
+    }
     res.status(400).json({ message: 'Error creating user', error: err.message });
   }
 });

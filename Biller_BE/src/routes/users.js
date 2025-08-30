@@ -30,4 +30,31 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
+// Delete user by ID (protected)
+router.delete('/:id', auth, async (req, res) => {
+  try {
+    const conn = await pool.getConnection();
+    const { id } = req.params;
+    await conn.query('DELETE FROM users WHERE id = ?', [id]);
+    conn.release();
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Update user by ID (protected)
+router.put('/:id', auth, async (req, res) => {
+  try {
+    const conn = await pool.getConnection();
+    const { id } = req.params;
+    const { username, role } = req.body;
+    await conn.query('UPDATE users SET username = ?, role = ? WHERE id = ?', [username, role, id]);
+    conn.release();
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;
