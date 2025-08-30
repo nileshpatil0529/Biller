@@ -35,6 +35,9 @@ import { HttpClientModule } from '@angular/common/http';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthInterceptor } from './shared/auth.interceptor';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { SettingsComponent } from './settings/settings.component';
 
 @NgModule({
 		declarations: [
@@ -46,6 +49,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 			ConfirmDialogComponent,
 			HomeComponent,
 			InvoiceComponent,
+			SettingsComponent,
 		],
 	imports: [
 		BrowserModule,
@@ -69,7 +73,9 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 		MatAutocompleteModule,
 		MatOptionModule,
 		HttpClientModule,
-		MatSnackBarModule
+		MatSnackBarModule,
+		MatSlideToggleModule,
+		MatTooltipModule
 	],
 	providers: [
 		AuthService,

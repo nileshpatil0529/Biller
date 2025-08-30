@@ -1,6 +1,26 @@
-.settings-container {
-  margin: 24px;
-}
 button {
   margin-bottom: 12px;
+}
+.settings-card {
+  padding: 32px 24px;
+}
+
+.settings-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.settings-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: #1976d2;
+}
+
+.settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
 }

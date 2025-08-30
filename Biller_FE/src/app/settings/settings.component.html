@@ -1,7 +1,15 @@
-<div class="settings-container">
-  <h3>Language Settings</h3>
-  <button mat-raised-button color="primary" (click)="toggleLanguage()">
-    {{ settings.getLanguage() === 'e' ? 'Switch to Marathi' : 'Switch to English' }}
-  </button>
-  <p>Current language: <b>{{ settings.getLanguage() === 'e' ? 'English' : 'Marathi' }}</b></p>
+<div class="container my-3">
+    <h2 class="settings-title">Settings</h2>
+    <div class="settings-option">
+        <span class="settings-icon" aria-label="Language">
+            <i class="material-icons">language</i>
+        </span>
+        <label for="lang-toggle">Language:</label>
+        <mat-slide-toggle id="lang-toggle" (change)="onLangToggle($event)"
+            matTooltip="Switch between English and Marathi" aria-label="Language toggle">Marathi</mat-slide-toggle>
+    </div>
+    <hr>
+    <div class="settings-actions">
+        <button mat-raised-button color="primary" (click)="saveSettings()">Save Changes</button>
+    </div>
 </div>

@@ -7,10 +7,22 @@ import { SettingsService } from '../shared/settings.service';
   styleUrls: ['./settings.component.css']
 })
 export class SettingsComponent {
-  constructor(public settings: SettingsService) {}
+  showConfirm = false;
+  settingsService: SettingsService;
+
+  constructor(settingsService: SettingsService) {
+    this.settingsService = settingsService;
+  }
 
   toggleLanguage() {
-    const current = this.settings.getLanguage();
-    this.settings.setLanguage(current === 'e' ? 'h' : 'e');
+    const current = this.settingsService.getLanguage();
+    this.settingsService.setLanguage(current === 'e' ? 'h' : 'e');
+  }
+
+  onLangToggle(event: any) {
+    this.settingsService.setLanguage(event.checked ? 'h' : 'e');
+  }
+
+  saveSettings() {
   }
 }
