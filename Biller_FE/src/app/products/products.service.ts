@@ -7,7 +7,6 @@ export interface Product {
   id?: number;
   code: string;
   name: string;
-  nameHindi: string;
   unit: string;
   price: number;
   stockQty: number;

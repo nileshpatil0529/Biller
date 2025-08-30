@@ -25,7 +25,7 @@ router.post('/upload', auth, upload.single('file'), async (req, res) => {
     let headerLine = csv.split('\n')[0].replace(/\r/g, '');
     if (headerLine.charCodeAt(0) === 0xFEFF) headerLine = headerLine.slice(1);
     const headers = headerLine.split(',').map(h => h.trim().toLowerCase());
-    const requiredHeaders = ['code', 'namehindi', 'unit', 'price', 'stockqty'];
+  const requiredHeaders = ['code', 'name', 'unit', 'price', 'stockqty'];
     const missingHeaders = requiredHeaders.filter(f => !headers.includes(f));
     if (missingHeaders.length > 0) {
       return res.status(400).json({ message: 'CSV format error', errors: [{ row: 0, error: 'CSV format error: missing columns', missingColumns: missingHeaders }] });
@@ -49,7 +49,7 @@ router.post('/upload', auth, upload.single('file'), async (req, res) => {
     products.forEach((prod, idx) => {
       const codeStr = String(prod.code), nameLower = String(prod.name).toLowerCase();
       let rowErrors = [];
-      ['name', 'namehindi', 'unit', 'price', 'stockqty'].forEach(f => { if (!prod[f] || prod[f] === '') rowErrors.push(`Missing field '${f}'`); });
+  ['name', 'unit', 'price', 'stockqty'].forEach(f => { if (!prod[f] || prod[f] === '') rowErrors.push(`Missing field '${f}'`); });
       if (existingCodes.has(codeStr)) rowErrors.push(`Duplicate code: '${prod.code}' already exists.`);
       if (batchCodes.has(codeStr)) rowErrors.push(`Duplicate code in file: '${prod.code}' appears multiple times.`);
       if (existingNames.has(nameLower)) rowErrors.push(`Duplicate name: '${prod.name}' already exists.`);
@@ -94,7 +94,6 @@ router.post('/upload', auth, upload.single('file'), async (req, res) => {
  *                 type: string
  *               name:
  *                 type: string
- *               nameHindi:
  *                 type: string
  *               unit:
  *                 type: string
@@ -112,11 +111,11 @@ router.post('/upload', auth, upload.single('file'), async (req, res) => {
 // ...existing code...
 // Edit product (protected)
 router.put('/:id', auth, async (req, res) => {
-  const { code, name, nameHindi, unit, price, stockQty } = req.body;
+  const { code, name, unit, price, stockQty } = req.body;
   try {
     const product = await Product.findByPk(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
-    await product.update({ code, name, nameHindi, unit, price, stockQty });
+  await product.update({ code, name, unit, price, stockQty });
     res.json({ message: 'Product updated', product });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });

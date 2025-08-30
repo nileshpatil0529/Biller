@@ -5,7 +5,6 @@ import { Observable } from 'rxjs';
 export interface InvoiceProduct {
   code: string;
   name: string;
-  nameHindi: string;
   unit: string;
   price: number;
   sell_qty: number;

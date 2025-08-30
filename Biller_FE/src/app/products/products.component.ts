@@ -36,7 +36,7 @@ export class ProductsComponent implements OnInit {
   pageSize = 10;
   pageSizeOptions = [5, 10, 20, 30];
   total = 0;
-  displayedColumns: string[] = ['code', 'name', 'nameHindi', 'unit', 'price', 'stockQty', 'actions'];
+  displayedColumns: string[] = ['code', 'name', 'unit', 'price', 'stockQty', 'actions'];
   units: string[] = ['pcs', 'box', 'kg', 'ltr', 'meter', 'dozen'];
   productForm: FormGroup;
   editingProduct: Product | null = null;
@@ -56,7 +56,6 @@ export class ProductsComponent implements OnInit {
     this.productForm = this.fb.group({
       code: ['', Validators.required],
       name: ['', Validators.required],
-      nameHindi: ['', Validators.required],
       unit: ['', Validators.required],
       price: [0, [Validators.required, Validators.min(0)]],
       stockQty: [0, [Validators.required, Validators.min(0)]],
@@ -186,7 +185,7 @@ export class ProductsComponent implements OnInit {
     this.addingRow = true;
     this.showForm = false;
     this.productForm.reset({ price: 0, stockQty: 0 });
-    this.products = [{ id: 0, code: '', name: '', nameHindi: '', unit: '', price: 0, stockQty: 0 }, ...this.products];
+  this.products = [{ id: 0, code: '', name: '', unit: '', price: 0, stockQty: 0 }, ...this.products];
     this.updateDataSource();
   }
 
@@ -245,8 +244,8 @@ export class ProductsComponent implements OnInit {
   }
 
   exportProducts(): void {
-    const csv = ['code,name,nameHindi,unit,price,stockQty', ...this.products.map(p => [p.code, p.name, p.nameHindi, p.unit, p.price, p.stockQty].join(','))].join('\r\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
+  const csv = ['code,name,unit,price,stockQty', ...this.products.map(p => [p.code, p.name, p.unit, p.price, p.stockQty].join(','))].join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;

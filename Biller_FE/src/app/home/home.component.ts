@@ -29,7 +29,6 @@ export class HomeComponent implements OnInit {
   displayedColumns: string[] = [
     'code',
     'name',
-    'nameHindi',
     'unit',
     'price',
     'stockQty',
@@ -99,7 +98,6 @@ export class HomeComponent implements OnInit {
     const products = this.dataSource.filteredData.map(product => ({
       code: product.code,
       name: product.name,
-      nameHindi: product.nameHindi,
       unit: product.unit,
       price: product.price,
       sell_qty: typeof product.sell_qty === 'number' ? product.sell_qty : 0,
@@ -136,7 +134,6 @@ export class HomeComponent implements OnInit {
     this.productForm = this.fb.group({
       code: ['', Validators.required],
       name: ['', Validators.required],
-      nameHindi: ['', Validators.required],
       unit: ['', Validators.required],
       price: [0, [Validators.required, Validators.min(0)]],
       stockQty: [0, [Validators.required, Validators.min(0)]],
@@ -235,9 +232,9 @@ export class HomeComponent implements OnInit {
 
   exportProducts(): void {
     const csv = [
-      'code,name,nameHindi,unit,price,stockQty',
+  'code,name,unit,price,stockQty',
       ...this.products.map((p) =>
-        [p.code, p.name, p.nameHindi, p.unit, p.price, p.stockQty].join(',')
+  [p.code, p.name, p.unit, p.price, p.stockQty].join(',')
       ),
     ].join('\r\n');
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -293,7 +290,6 @@ export class HomeComponent implements OnInit {
     this.filteredProducts = this.allProducts.filter(product =>
       product.code.toLowerCase().includes(filterValue) ||
       product.name.toLowerCase().includes(filterValue) ||
-      product.nameHindi.toLowerCase().includes(filterValue) ||
       product.unit.toLowerCase().includes(filterValue)
     );
   }
