@@ -47,13 +47,13 @@ const swaggerOptions = {
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-// Apply JWT middleware to all routes except /api/auth/login and /api/auth/register
+// Apply JWT middleware only to API routes (not static/UI)
 app.use((req, res, next) => {
   if (
+    !req.path.startsWith('/api') ||
     req.path.startsWith('/api/auth/login') ||
     req.path.startsWith('/api/auth/register') ||
-    req.path.startsWith('/api-docs') ||
-    req.path.startsWith('http://localhost:3000')
+    req.path.startsWith('/api-docs')
   ) {
     return next();
   }

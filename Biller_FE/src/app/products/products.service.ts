@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
+import { environment } from '../../environments/environment';
 
 export interface Product {
   id?: number;
@@ -20,7 +21,7 @@ export class ProductsService {
       headers: this.getAuthHeaders()
     });
   }
-  private apiUrl = 'http://localhost:3000/api/products';
+  private apiUrl = environment.apiBaseUrl + 'api/products';
 
   constructor(private http: HttpClient, private authService: AuthService) {}
 

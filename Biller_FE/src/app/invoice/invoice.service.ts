@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface InvoiceProduct {
   code: string;
@@ -29,7 +30,7 @@ export class InvoiceService {
   deleteInvoice(invoiceId: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${invoiceId}`);
   }
-  private apiUrl = 'http://localhost:3000/api/invoices'; // Update with your backend URL
+  private apiUrl = environment.apiBaseUrl + 'api/invoices';
 
   updateInvoiceByNumber(invoiceNumber: string, data: InvoiceData): Observable<any> {
     console.log(`${this.apiUrl}/${invoiceNumber}`);
