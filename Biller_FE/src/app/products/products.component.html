@@ -46,10 +46,8 @@
         </table>
       </div>
       <mat-card-actions style="display: flex; justify-content: flex-end; gap: 12px;">
-  <button mat-raised-button color="primary" (click)="uploadImportFile()" [disabled]="!importFile" style="min-width: 100px;">Upload</button>
-        <button mat-icon-button color="warn" (click)="cancelImport()" matTooltip="Cancel">
-          <mat-icon>cancel</mat-icon>
-        </button>
+        <button mat-stroked-button color="warn" (click)="cancelImport()" style="min-width: 100px;">Cancel</button>
+        <button mat-raised-button color="primary" (click)="uploadImportFile()" [disabled]="!importFile" style="min-width: 100px;">Upload</button>
       </mat-card-actions>
     </mat-card>
   </div>

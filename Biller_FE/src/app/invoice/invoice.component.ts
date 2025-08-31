@@ -1,5 +1,8 @@
 import { Component } from '@angular/core';
 import { InvoiceService, InvoiceData } from './invoice.service';
+import { Router } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from '../shared/confirm-dialog.component';
 
 @Component({
   selector: 'app-invoice',
@@ -7,6 +10,9 @@ import { InvoiceService, InvoiceData } from './invoice.service';
   styleUrls: ['./invoice.component.css']
 })
 export class InvoiceComponent {
+  onNewInvoice() {
+    this.router.navigate(['/home']);
+  }
   invoices: InvoiceData[] = [];
   displayedColumns: string[] = [
     'client',
@@ -14,10 +20,39 @@ export class InvoiceComponent {
     'discount',
     'total',
     'grandTotal',
-    'paymentStatus'
+    'paymentStatus',
+    'action'
   ];
+  onDeleteInvoice(invoice: any) {
+    if (!invoice.id) {
+      console.error('Invoice id is required to delete');
+      return;
+    }
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title: 'Delete Invoice',
+        message: 'Are you sure you want to delete this invoice?'
+      }
+    });
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        this.invoiceService.deleteInvoice(invoice.id).subscribe({
+          next: () => {
+            this.invoices = this.invoices.filter(inv => inv.id !== invoice.id);
+          },
+          error: (err) => {
+            console.error('Failed to delete invoice:', err);
+          }
+        });
+      }
+    });
+  }
 
-  constructor(private invoiceService: InvoiceService) {
+  constructor(
+    private invoiceService: InvoiceService,
+    private router: Router,
+    private dialog: MatDialog
+  ) {
     this.invoiceService.getInvoices().subscribe({
       next: (data) => {
         this.invoices = data;
@@ -25,6 +60,23 @@ export class InvoiceComponent {
       },
       error: (err) => {
         console.error('Failed to fetch invoices:', err);
+      }
+    });
+  }
+
+  onInvoiceRowClick(invoice: any) {
+    if (!invoice.id) {
+      console.error('Invoice id is required to fetch products');
+      return;
+    }
+    this.invoiceService.getInvoiceProducts(invoice.id).subscribe({
+      next: (products) => {
+        this.router.navigate(['/home'], {
+          state: { invoice, products }
+        });
+      },
+      error: (err) => {
+        console.error('Failed to fetch invoice products:', err);
       }
     });
   }

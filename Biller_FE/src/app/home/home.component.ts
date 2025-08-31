@@ -1,3 +1,4 @@
+// ...existing imports...
 import { Component, OnInit, ViewChild, AfterViewInit, ElementRef } from '@angular/core';
 import { ThemeService } from '../shared/theme.service';
 import { MatTableDataSource } from '@angular/material/table';
@@ -6,11 +7,14 @@ import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../shared/confirm-dialog.component';
 import { ProductsService, Product } from '../products/products.service';
 import { Router } from '@angular/router';
+import { Location } from '@angular/common';
 import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { ClientService, Client } from '../clients/client.service';
 import { InvoiceForm } from './invoice-form.model';
 import { InvoiceService } from '../invoice/invoice.service';
 import { InvoiceComponent } from '../invoice/invoice.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import SnackbarComponent from '../shared/snackbar.component';
 
 @Component({
   selector: 'app-home',
@@ -18,6 +22,139 @@ import { InvoiceComponent } from '../invoice/invoice.component';
   styleUrls: ['./home.component.css'],
 })
 export class HomeComponent implements OnInit {
+  onCancel(): void {
+    this.clearInvoiceForm();
+    this.showInvoiceForm = false;
+    if (this.isEditMode) {
+      this.router.navigate(['/invoices']);
+    }
+  }
+  editClicked = false;
+  onEditInvoice(): void {
+    this.editClicked = true;
+    // Retrieve invoice number from form or router state
+    let invoiceNumber = this.invoiceForm.get('invoiceNumber')?.value;
+    if (!invoiceNumber) {
+      const nav = this.router.getCurrentNavigation();
+      const state = (nav && nav.extras && nav.extras.state ? nav.extras.state : this.location.getState()) as any;
+      invoiceNumber = state?.invoice?.invoiceNumber || '';
+    }
+    // Prepare invoice update payload
+    const client = this.clients.find(c => c.id === this.invoiceForm.get('clientId')?.value)?.name || 'Unknown Client';
+    const location = this.invoiceForm.get('location')?.value || 'Unknown Location';
+    const paymentMode = this.invoiceForm.get('paymentMode')?.value || '';
+    const discount = this.invoiceForm.get('discount')?.value || 0;
+    const paymentStatus = this.invoiceForm.get('paymentStatus')?.value || '';
+    const total = this.dataSource.filteredData.reduce((sum, product) => sum + ((product.sell_qty || 0) * product.price), 0);
+    const grandTotal = total - (total * discount / 100);
+    const products = this.dataSource.filteredData.map(product => ({
+      code: product.code,
+      name: product.name,
+      unit: product.unit,
+      price: product.price,
+      sell_qty: typeof product.sell_qty === 'number' ? product.sell_qty : 0,
+      totalValue: ((typeof product.sell_qty === 'number' ? product.sell_qty : 0) * product.price)
+    }));
+    // Call backend API to update invoice using invoiceNumber
+    this.invoiceService.updateInvoiceByNumber(invoiceNumber, {
+      client,
+      location,
+      paymentMode,
+      discount,
+      total,
+      grandTotal,
+      paymentStatus,
+      products
+    }).subscribe({
+      next: () => {
+        this.snackBar.openFromComponent(SnackbarComponent, {
+          data: { message: 'Invoice updated successfully!', class: 'snackbar-success' },
+          duration: 3000,
+          verticalPosition: 'top'
+        });
+        this.editClicked = false;
+    this.router.navigate(['/invoices']);
+      },
+      error: (err) => {
+        console.error('Failed to update invoice:', err);
+        this.snackBar.openFromComponent(SnackbarComponent, {
+          data: { message: 'Failed to update invoice!', class: 'snackbar-error' },
+          duration: 3000,
+          verticalPosition: 'top'
+        });
+        this.editClicked = false;
+      }
+    });
+  }
+  private handleEditModeFromRouterState(): void {
+    let state: any = null;
+    // Try router navigation state first
+    const nav = this.router.getCurrentNavigation();
+    if (nav && nav.extras && nav.extras.state) {
+      state = nav.extras.state;
+    } else {
+      // Fallback to browser history state (for reloads/direct access)
+      state = this.location.getState();
+    }
+    if (state && state.invoice) {
+      const invoice = state.invoice;
+      console.log('Invoice from router state:', invoice);
+      this.isEditMode = true;
+      this.showInvoiceForm = true;
+      // Find clientId from name
+      let clientId = null;
+      if (invoice.client) {
+        const clientObj = this.clients.find(c => c.name === invoice.client);
+        clientId = clientObj ? clientObj.id : null;
+      }
+      this.invoiceForm.patchValue({
+        clientId,
+        invoiceNumber: invoice.id || '',
+        location: invoice.location || '',
+        paymentMode: invoice.paymentMode || '',
+        discount: invoice.discount || 0,
+        grandTotal: invoice.grandTotal || 0,
+        paymentStatus: invoice.paymentStatus || 'Unpaid',
+      });
+      // Use products from router state if present, else fetch from API
+      if (state.products && Array.isArray(state.products)) {
+        this.products = state.products.map((p: any) => {
+          const found = this.allProducts?.find(ap => ap.code === p.code);
+          return {
+            code: p.code,
+            name: p.name,
+            unit: p.unit,
+            price: p.price,
+            sell_qty: p.sell_qty,
+            totalValue: typeof p.totalValue === 'number' ? p.totalValue : (p.sell_qty || 0) * p.price,
+            stockQty: found ? found.stockQty : 0
+          };
+        });
+        this.dataSource.data = this.products;
+      } else if (invoice.id) {
+        this.invoiceService.getInvoiceProducts(invoice.id).subscribe({
+          next: (products) => {
+            this.products = products.map((p: any) => {
+              const found = this.allProducts?.find(ap => ap.code === p.code);
+              return {
+                code: p.code,
+                name: p.name,
+                unit: p.unit,
+                price: p.price,
+                sell_qty: p.sell_qty,
+                totalValue: typeof p.totalValue === 'number' ? p.totalValue : (p.sell_qty || 0) * p.price,
+                stockQty: found ? found.stockQty : 0
+              };
+            });
+            this.dataSource.data = this.products;
+          },
+          error: (err) => {
+            console.error('Failed to fetch invoice products:', err);
+          }
+        });
+      }
+    }
+  }
   showInvoiceForm = false;
   get grandTotal(): number {
     const total = this.dataSource.filteredData.reduce((sum, product) => sum + ((product.sell_qty || 0) * product.price), 0);
@@ -55,7 +192,7 @@ export class HomeComponent implements OnInit {
   clearInvoiceForm(): void {
     this.invoiceForm.reset({
       clientId: null,
-      invoiceNumber: '',
+      id: '',
       location: '',
       paymentMode: '',
       discount: 0,
@@ -88,9 +225,9 @@ export class HomeComponent implements OnInit {
   }
 
   onPrintInvoice(): void {
-  const clientObj = this.clients.find(c => c.id === this.invoiceForm.get('clientId')?.value);
-  const client = clientObj ? clientObj.name : 'Unknown Client';
-  const location = this.invoiceForm.get('location')?.value || 'Unknown Location';
+    const clientObj = this.clients.find(c => c.id === this.invoiceForm.get('clientId')?.value);
+    const client = clientObj ? clientObj.name : 'Unknown Client';
+    const location = this.invoiceForm.get('location')?.value || 'Unknown Location';
     const paymentMode = this.invoiceForm.get('paymentMode')?.value || '';
     const discount = this.invoiceForm.get('discount')?.value || 0;
     const paymentStatus = this.invoiceForm.get('paymentStatus')?.value || '';
@@ -128,12 +265,14 @@ export class HomeComponent implements OnInit {
     private fb: FormBuilder,
     private productsService: ProductsService,
     private dialog: MatDialog,
+    private snackBar: MatSnackBar,
     private router: Router,
     private clientService: ClientService,
     private invoiceService: InvoiceService,
-  public themeService: ThemeService
+    private location: Location,
+    public themeService: ThemeService
   ) {
-    
+
     this.productForm = this.fb.group({
       code: ['', Validators.required],
       name: ['', Validators.required],
@@ -144,7 +283,7 @@ export class HomeComponent implements OnInit {
     this.invoiceForm = this.fb.group({
       clientId: [null],
       invoiceNumber: [{ value: '', disabled: true }],
-      location: ['', Validators.required],
+      location: [''],
       paymentMode: ['', Validators.required],
       discount: [0],
       grandTotal: [{ value: 0, disabled: true }],
@@ -156,9 +295,23 @@ export class HomeComponent implements OnInit {
     // Set theme on home load
     const theme = localStorage.getItem('theme');
     this.themeService.setDarkMode(theme === 'dark');
-    this.loadProducts();
     this.clients = this.clientService.getClients();
     this.updateGrandTotal();
+
+    // Listen for router navigation events to handle edit mode
+    this.router.events.subscribe(event => {
+      // Only handle NavigationEnd events
+      if ((event as any).constructor.name === 'NavigationEnd') {
+        this.handleEditModeFromRouterState();
+      }
+    });
+    // Also handle initial navigation
+    this.handleEditModeFromRouterState();
+
+    // Only load all products if not in edit mode
+    if (!this.isEditMode) {
+      this.loadProducts();
+    }
   }
 
   allProducts: Product[] = [];
@@ -238,9 +391,9 @@ export class HomeComponent implements OnInit {
 
   exportProducts(): void {
     const csv = [
-  'code,name,unit,price,stockQty',
+      'code,name,unit,price,stockQty',
       ...this.products.map((p) =>
-  [p.code, p.name, p.unit, p.price, p.stockQty].join(',')
+        [p.code, p.name, p.unit, p.price, p.stockQty].join(',')
       ),
     ].join('\r\n');
     const blob = new Blob([csv], { type: 'text/csv' });

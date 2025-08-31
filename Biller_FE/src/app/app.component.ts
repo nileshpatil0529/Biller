@@ -12,7 +12,7 @@ export class AppComponent {
     // Auto-login if token exists
     if (localStorage.getItem('isLoggedIn') === 'true' && localStorage.getItem('token')) {
       if (this.router.url === '/login' || this.router.url === '/') {
-        this.router.navigate(['/home']);
+        this.router.navigate(['/invoices']);
       }
     }
   }

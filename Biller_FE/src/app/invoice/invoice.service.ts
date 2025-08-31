@@ -12,6 +12,7 @@ export interface InvoiceProduct {
 }
 
 export interface InvoiceData {
+  id?: number;
   client: string;
   location: string;
   discount: number;
@@ -25,7 +26,20 @@ export interface InvoiceData {
 
 @Injectable({ providedIn: 'root' })
 export class InvoiceService {
+  deleteInvoice(invoiceId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${invoiceId}`);
+  }
   private apiUrl = 'http://localhost:3000/api/invoices'; // Update with your backend URL
+
+  updateInvoiceByNumber(invoiceNumber: string, data: InvoiceData): Observable<any> {
+    console.log(`${this.apiUrl}/${invoiceNumber}`);
+    
+    return this.http.put(`${this.apiUrl}/${invoiceNumber}`, data);
+  }
+
+  getInvoiceProducts(invoiceId: number): Observable<InvoiceProduct[]> {
+    return this.http.get<InvoiceProduct[]>(`${this.apiUrl}/${invoiceId}/invoice_products`);
+  }
 
   constructor(private http: HttpClient) {}
 

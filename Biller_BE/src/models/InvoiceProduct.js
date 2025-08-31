@@ -14,4 +14,6 @@ const InvoiceProduct = sequelize.define('InvoiceProduct', {
   timestamps: false
 });
 
+const Product = require('./Product');
+InvoiceProduct.belongsTo(Product, { foreignKey: 'product_id', targetKey: 'code', as: 'product' });
 module.exports = InvoiceProduct;
