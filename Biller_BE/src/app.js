@@ -8,6 +8,7 @@ const sequelize = require('./models'); // Ensure models are loaded and synced
 const app = express();
 app.use(cors());
 app.use(express.json());
+const path = require('path');
 
 // JWT middleware
 function authenticateToken(req, res, next) {
@@ -20,7 +21,7 @@ function authenticateToken(req, res, next) {
     next();
   });
 }
-
+app.use(express.static(path.join(__dirname, '../frontend-dist')));
 // Swagger setup
 const swaggerOptions = {
   swaggerDefinition: {
@@ -51,7 +52,8 @@ app.use((req, res, next) => {
   if (
     req.path.startsWith('/api/auth/login') ||
     req.path.startsWith('/api/auth/register') ||
-    req.path.startsWith('/api-docs')
+    req.path.startsWith('/api-docs') ||
+    req.path.startsWith('http://localhost:3000')
   ) {
     return next();
   }
@@ -68,13 +70,6 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/invoices', invoiceRoutes);
-
-app.get('/', (req, res) => res.send('Biller_BE API running'));
-
-
-// Serve Angular frontend build
-const path = require('path');
-app.use(express.static(path.join(__dirname, '../frontend-dist')));
 
 // Fallback to index.html for Angular routes (except API)
 app.get(/^((?!\/api).)*$/, (req, res) => {
