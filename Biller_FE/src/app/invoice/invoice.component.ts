@@ -10,6 +10,9 @@ import { ConfirmDialogComponent } from '../shared/confirm-dialog.component';
   styleUrls: ['./invoice.component.css']
 })
 export class InvoiceComponent {
+  onMarkPaid(id: number) {
+    console.log('Mark Paid clicked for invoice id:', id);
+  }
   onNewInvoice() {
     this.router.navigate(['/home']);
   }
@@ -17,8 +20,6 @@ export class InvoiceComponent {
   displayedColumns: string[] = [
     'client',
     'location',
-    'discount',
-    'total',
     'grandTotal',
     'paymentStatus',
     'action'

@@ -8,12 +8,14 @@ sequelize.sync()
   .then(async () => {
     const adminExists = await User.findOne({ where: { username: 'admin' } });
     if (!adminExists) {
+      const bcrypt = require('bcryptjs');
+      const hashedPassword = await bcrypt.hash('12345', 10);
       await User.create({
         username: 'admin',
-        password: '12345', // You may want to hash this in production
+        password: hashedPassword,
         role: 'admin'
       });
-      console.log('Default admin user created: username=admin, password=12345');
+      console.log('Default admin user created: username=admin, password=12345 (hashed)');
     }
   })
   .catch((err) => {

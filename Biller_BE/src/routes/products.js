@@ -58,6 +58,13 @@ router.post('/upload', auth, upload.single('file'), async (req, res) => {
       batchCodes.add(codeStr); batchNames.add(nameLower);
     });
     if (errors.length) return res.status(400).json({ message: 'Validation errors', errors });
+    // Map 'stockqty' to 'stockQty' for Sequelize
+    products.forEach(prod => {
+      if (typeof prod.stockqty !== 'undefined') {
+        prod.stockQty = Number(prod.stockqty) || 0;
+        delete prod.stockqty;
+      }
+    });
     const created = products.length ? await Product.bulkCreate(products) : [];
     res.json({ message: 'Products imported successfully', added: created.length });
   } catch (err) {
