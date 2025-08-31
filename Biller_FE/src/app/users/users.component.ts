@@ -15,6 +15,7 @@ import { ConfirmDialogComponent } from '../shared/confirm-dialog.component';
   styleUrls: ['./users.component.css']
 })
 export class UsersComponent implements OnInit {
+  addUserBtnDisabled = false;
   showUserForm = false;
   editingUserId: number | null = null; // null for add, user.id for edit
   displayedColumns: string[] = ['id', 'username', 'role', 'actions'];
@@ -46,9 +47,16 @@ export class UsersComponent implements OnInit {
   }
 
   cancelUserForm() {
-  this.userForm.reset({ role: 'user' });
-  this.showUserForm = false;
-  this.editingUserId = null;
+    this.userForm.reset({ role: 'user' });
+    this.showUserForm = false;
+    this.editingUserId = null;
+    this.addUserBtnDisabled = false;
+  }
+  onAddUserClick() {
+    this.addUserBtnDisabled = true;
+    this.showUserForm = true;
+    this.editingUserId = null;
+    this.userForm.reset({ role: 'user' });
   }
 
   onSubmit() {
@@ -56,8 +64,8 @@ export class UsersComponent implements OnInit {
       this.userForm.markAllAsTouched();
       return;
     }
-    const { username, role } = this.userForm.value;
-    if (this.editingUserId === null) {
+  const { username, role } = this.userForm.value;
+  if (this.editingUserId === null) {
       // Add user
       this.usersService.createUser({ username, role }).subscribe({
         next: (user) => {
@@ -67,6 +75,7 @@ export class UsersComponent implements OnInit {
               this.userForm.reset({ role: 'user' });
               this.showUserForm = false;
               this.editingUserId = null;
+              this.addUserBtnDisabled = false;
               this.snackBar.openFromComponent(SnackbarComponent, {
                 data: { message: 'User added successfully!', class: 'snackbar-success' },
                 duration: 3000,
@@ -78,6 +87,7 @@ export class UsersComponent implements OnInit {
         error: (err) => {
           let msg = 'Error adding user';
           if (err?.error?.message) msg = err.error.message;
+          this.addUserBtnDisabled = false;
           this.snackBar.openFromComponent(SnackbarComponent, {
             data: { message: msg, class: 'snackbar-error' },
             duration: 4000,

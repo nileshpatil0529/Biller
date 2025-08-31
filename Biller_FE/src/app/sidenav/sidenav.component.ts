@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
+import { ThemeService } from '../shared/theme.service';
 
 
 @Component({
@@ -20,7 +21,11 @@ export class SidenavComponent {
   ];
   collapsed = false;
   sidenavToggleActive = false;
-  constructor(private authService: AuthService, private router: Router) {
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    public themeService: ThemeService
+  ) {
     document.addEventListener('click', this.handleOutsideClick.bind(this));
   }
   toggleSidenav() {

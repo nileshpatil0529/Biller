@@ -1,4 +1,5 @@
 import { Component, OnInit, ViewChild, AfterViewInit, ElementRef } from '@angular/core';
+import { ThemeService } from '../shared/theme.service';
 import { MatTableDataSource } from '@angular/material/table';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
@@ -129,8 +130,10 @@ export class HomeComponent implements OnInit {
     private dialog: MatDialog,
     private router: Router,
     private clientService: ClientService,
-    private invoiceService: InvoiceService
+    private invoiceService: InvoiceService,
+  public themeService: ThemeService
   ) {
+    
     this.productForm = this.fb.group({
       code: ['', Validators.required],
       name: ['', Validators.required],
@@ -150,6 +153,9 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Set theme on home load
+    const theme = localStorage.getItem('theme');
+    this.themeService.setDarkMode(theme === 'dark');
     this.loadProducts();
     this.clients = this.clientService.getClients();
     this.updateGrandTotal();

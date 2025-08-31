@@ -1,4 +1,8 @@
-/* @import '~@angular/material/prebuilt-themes/indigo-pink.css'; */
+
+/*
+	Material theming is handled in styles.scss using custom palettes and theme classes.
+	This file should only contain global resets and font definitions.
+*/
 
 html, body { height: 100%; }
 body { margin: 0; font-family: 'Inter', Roboto, "Helvetica Neue", Arial, sans-serif; }

@@ -1,9 +1,6 @@
 .add-user-btn {
   margin-left: auto;
 }
-.user-form {
-  margin-bottom: 24px;
-}
 
 .user-form-fields {
   display: flex;
@@ -37,7 +34,6 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
 }
 
 .users-title {

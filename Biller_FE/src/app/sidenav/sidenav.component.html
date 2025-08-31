@@ -32,6 +32,10 @@
         <mat-icon>menu</mat-icon>
       </button>
       <span>{{ title }}</span>
+      <span style="flex: 1 1 auto;"></span>
+      <mat-slide-toggle color="accent" [checked]="themeService.isDarkMode()" (change)="themeService.toggleTheme()">
+        Dark Mode
+      </mat-slide-toggle>
     </mat-toolbar>
     <ng-content></ng-content>
   </mat-sidenav-content>

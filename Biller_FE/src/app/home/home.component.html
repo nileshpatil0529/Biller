@@ -1,4 +1,6 @@
 <div class="container mt-3">
+  <div style="display: flex; justify-content: flex-end; margin-bottom: 16px;">
+  </div>
   <!-- ...existing code... -->
   <form *ngIf="showInvoiceForm" [formGroup]="invoiceForm">
     <mat-card>
@@ -87,8 +89,8 @@
   <div *ngIf="dataSource.filteredData.length > 0 && !showInvoiceForm" class="form-actions-with-total">
     <span class="grand-total-display">Grand Total: {{ grandTotal | number:'1.2-2' }}</span>
     <div style="display: flex; gap: 8px; margin-left: auto;">
-      <button mat-icon-button color="primary" (click)="clearAllSellQty()" matTooltip="Clear All Quantities">
-        <mat-icon>clear</mat-icon>
+      <button mat-button color="primary" (click)="clearAllSellQty()">
+        Clear
       </button>
       <button mat-raised-button color="primary" (click)="showInvoiceForm = true">
         <mat-icon>add</mat-icon> Invoice

@@ -36,8 +36,7 @@
     </mat-card>
   </form>
   <div class="users-header">
-    <h2 class="users-title">User Management</h2>
-    <button mat-raised-button color="primary" class="add-user-btn" (click)="showUserForm=true; editingUserId=null; userForm.reset({role: 'user'})">
+    <button *ngIf="!showUserForm" mat-raised-button color="primary" class="add-user-btn" (click)="onAddUserClick()">
       Add User
     </button>
   </div>
