@@ -10,8 +10,8 @@ export class ThemeService {
   private darkMode: boolean;
 
   constructor() {
-    const storedTheme = localStorage.getItem('theme');
-    this.darkMode = !(storedTheme === 'dark');
+  const storedTheme = localStorage.getItem('theme');
+  this.darkMode = storedTheme ? storedTheme === 'dark' : true;
     document.body.classList.remove('light-theme', 'dark-theme');
     document.body.classList.add(this.darkMode ? 'dark-theme' : 'light-theme');
   }
