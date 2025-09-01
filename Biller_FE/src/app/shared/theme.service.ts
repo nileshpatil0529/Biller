@@ -11,7 +11,7 @@ export class ThemeService {
 
   constructor() {
     const storedTheme = localStorage.getItem('theme');
-    this.darkMode = storedTheme === 'dark';
+    this.darkMode = !(storedTheme === 'dark');
     document.body.classList.remove('light-theme', 'dark-theme');
     document.body.classList.add(this.darkMode ? 'dark-theme' : 'light-theme');
   }
