@@ -255,14 +255,4 @@ body.dark-theme .search-field.mat-form-field {
 body.dark-theme .mat-card.invoice-form {
     background: rgba(35,43,57,0.7);
 }
-.table-responsive {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  margin-top: 0 !important;
-}
-table, .mat-table, .products-table {
-  min-width: 600px;
-  width: 100%;
-  white-space: nowrap;
-}
+

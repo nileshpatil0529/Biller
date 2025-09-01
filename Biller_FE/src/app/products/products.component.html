@@ -1,25 +1,33 @@
-  <div class="container mt-3">
+<div class="container mt-3">
   <div class="top-bar-row no-bottom-margin">
-  <button mat-raised-button color="primary" class="mb-4 actions-btn" [matMenuTriggerFor]="actionsMenu">
-  <mat-icon style="vertical-align:middle;margin-right:6px;">more_vert</mat-icon>
+    <button mat-raised-button color="primary" class="mb-4 actions-btn" [matMenuTriggerFor]="actionsMenu">
+      <mat-icon style="vertical-align:middle;margin-right:6px;">more_vert</mat-icon>
       Actions
-  </button>
-  <mat-menu #actionsMenu="matMenu">
-    <button mat-menu-item (click)="addRow()">Add Row</button>
-    <button mat-menu-item (click)="importProducts()">Import</button>
-    <button mat-menu-item (click)="exportProducts()"> Export</button>
-  </mat-menu>
+    </button>
+    <mat-menu #actionsMenu="matMenu">
+      <button mat-menu-item (click)="addRow()">Add Row</button>
+      <button mat-menu-item (click)="importProducts()">Import</button>
+      <button mat-menu-item (click)="exportProducts()"> Export</button>
+    </mat-menu>
     <mat-form-field appearance="outline" class="search-field">
       <mat-label>Search Products</mat-label>
-      <input matInput type="text" [(ngModel)]="productSearch" (ngModelChange)="applyFilter($event)" placeholder="Type to search..." />
+      <input matInput type="text" [(ngModel)]="productSearch" (ngModelChange)="applyFilter($event)"
+        placeholder="Type to search..." />
       <button mat-icon-button matSuffix (click)="clearSearch(); $event.preventDefault(); $event.stopPropagation();">
         <mat-icon>close</mat-icon>
       </button>
     </mat-form-field>
   </div>
   <div *ngIf="showImportForm" class="import-dialog import-flex">
-  <mat-card class="import-card">
-  <mat-card-title>Import Products from CSV</mat-card-title>
+    <mat-card class="import-card">
+      <div class="import-card-header">
+        <h6>Import Products rom CSV</h6>
+        <div class="import-card-actions">
+          <button mat-stroked-button color="warn" (click)="cancelImport()" class="import-cancel">Cancel</button>
+          <button mat-raised-button color="primary" (click)="uploadImportFile()" [disabled]="!importFile"
+            class="import-upload">Upload</button>
+        </div>
+      </div>
       <mat-card-content>
         <form>
           <label class="import-label">Select CSV File</label>
@@ -30,7 +38,7 @@
           </div>
         </form>
       </mat-card-content>
-      <div *ngIf="importErrors.length > 0" class="import-error-table">
+      <div *ngIf="importErrors.length > 0" class="table-responsive">
         <h4>Import Errors</h4>
         <table mat-table [dataSource]="importErrors" class="mat-elevation-z2 w-100">
           <ng-container matColumnDef="row">
@@ -45,63 +53,70 @@
           <tr mat-row *matRowDef="let row; columns: ['row', 'error']"></tr>
         </table>
       </div>
-      <mat-card-actions style="display: flex; justify-content: flex-end; gap: 12px;">
-        <button mat-stroked-button color="warn" (click)="cancelImport()" style="min-width: 100px;">Cancel</button>
-        <button mat-raised-button color="primary" (click)="uploadImportFile()" [disabled]="!importFile" style="min-width: 100px;">Upload</button>
-      </mat-card-actions>
     </mat-card>
   </div>
-  <table mat-table [dataSource]="dataSource" class="mat-elevation-z2 w-100 products-table">
-  <ng-container matColumnDef="code">
-      <th mat-header-cell *matHeaderCellDef>Product Code</th>
-      <td mat-cell *matCellDef="let product; let i = index">
-  <form *ngIf="(addingRow && i === 0) || (showForm && editingProduct?.id === product.id); else showCode" [formGroup]="productForm" class="d-inline">
-          <input type="text" formControlName="code" placeholder="Product Code" class="form-control form-control-sm d-inline-block" style="width:120px; margin-right:8px;" />
-        </form>
-        <ng-template #showCode>{{ product.code }}</ng-template>
-      </td>
-    </ng-container>
-    <ng-container matColumnDef="name">
-      <th mat-header-cell *matHeaderCellDef>Product Name (Eng)</th>
-      <td mat-cell *matCellDef="let product; let i = index">
-  <form *ngIf="(addingRow && i === 0) || (showForm && editingProduct?.id === product.id); else showName" [formGroup]="productForm" class="d-inline">
-          <input type="text" formControlName="name" placeholder="Product Name (Eng)" class="form-control form-control-sm d-inline-block" style="width:160px; margin-right:8px;" />
-        </form>
-  <ng-template #showName>{{ product.name }}</ng-template>
-      </td>
-    </ng-container>
-    <ng-container matColumnDef="unit">
+  <div class="table-responsive">
+    <table *ngIf="!showImportForm" mat-table [dataSource]="dataSource" class="mat-elevation-z2 w-100 products-table">
+      <ng-container matColumnDef="code">
+        <th mat-header-cell *matHeaderCellDef>Product Code</th>
+        <td mat-cell *matCellDef="let product; let i = index">
+          <form *ngIf="(addingRow && i === 0) || (showForm && editingProduct?.id === product.id); else showCode"
+            [formGroup]="productForm" class="d-inline">
+            <input type="text" formControlName="code" placeholder="Product Code"
+              class="form-control form-control-sm d-inline-block" style="width:120px; margin-right:8px;" />
+          </form>
+          <ng-template #showCode>{{ product.code }}</ng-template>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Product Name (Eng)</th>
+        <td mat-cell *matCellDef="let product; let i = index">
+          <form *ngIf="(addingRow && i === 0) || (showForm && editingProduct?.id === product.id); else showName"
+            [formGroup]="productForm" class="d-inline">
+            <input type="text" formControlName="name" placeholder="Product Name (Eng)"
+              class="form-control form-control-sm d-inline-block" style="width:160px; margin-right:8px;" />
+          </form>
+          <ng-template #showName>{{ product.name }}</ng-template>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="unit">
         <th mat-header-cell *matHeaderCellDef>Unit</th>
         <td mat-cell *matCellDef="let product; let i = index">
-          <form *ngIf="(addingRow && i === 0) || (showForm && editingProduct?.id === product.id); else showUnit" [formGroup]="productForm" class="d-inline">
-            <select formControlName="unit" class="form-select form-select-sm d-inline-block" style="width:80px; margin-right:8px;">
+          <form *ngIf="(addingRow && i === 0) || (showForm && editingProduct?.id === product.id); else showUnit"
+            [formGroup]="productForm" class="d-inline">
+            <select formControlName="unit" class="form-select form-select-sm d-inline-block"
+              style="width:80px; margin-right:8px;">
               <option *ngFor="let u of units" [value]="u">{{ u }}</option>
             </select>
           </form>
           <ng-template #showUnit>{{ product.unit }}</ng-template>
         </td>
       </ng-container>
-    <ng-container matColumnDef="price">
-      <th mat-header-cell *matHeaderCellDef>Price</th>
-      <td mat-cell *matCellDef="let product; let i = index">
-  <form *ngIf="(addingRow && i === 0) || (showForm && editingProduct?.id === product.id); else showPrice" [formGroup]="productForm" class="d-inline">
-          <input type="number" formControlName="price" placeholder="Price" class="form-control form-control-sm d-inline-block" style="width:80px; margin-right:8px;" />
-        </form>
-        <ng-template #showPrice>{{ product.price }}</ng-template>
-      </td>
-    </ng-container>
-  <ng-container matColumnDef="stockQty">
-      <th mat-header-cell *matHeaderCellDef>Stock Qty</th>
-      <td mat-cell *matCellDef="let product; let i = index">
-  <form *ngIf="(addingRow && i === 0) || (showForm && editingProduct?.id === product.id); else showStock" [formGroup]="productForm" class="d-inline">
-          <input type="number" formControlName="stockQty" placeholder="Stock Qty" class="form-control form-control-sm d-inline-block" style="width:80px; margin-right:8px;" />
-        </form>
-        <ng-template #showStock>{{ product.stockQty }}</ng-template>
-      </td>
-    </ng-container>
-    <ng-container matColumnDef="actions">
-      <th mat-header-cell *matHeaderCellDef>Actions</th>
-      <td mat-cell *matCellDef="let product; let i = index">
+      <ng-container matColumnDef="price">
+        <th mat-header-cell *matHeaderCellDef>Price</th>
+        <td mat-cell *matCellDef="let product; let i = index">
+          <form *ngIf="(addingRow && i === 0) || (showForm && editingProduct?.id === product.id); else showPrice"
+            [formGroup]="productForm" class="d-inline">
+            <input type="number" formControlName="price" placeholder="Price"
+              class="form-control form-control-sm d-inline-block" style="width:80px; margin-right:8px;" />
+          </form>
+          <ng-template #showPrice>{{ product.price }}</ng-template>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="stockQty">
+        <th mat-header-cell *matHeaderCellDef>Stock Qty</th>
+        <td mat-cell *matCellDef="let product; let i = index">
+          <form *ngIf="(addingRow && i === 0) || (showForm && editingProduct?.id === product.id); else showStock"
+            [formGroup]="productForm" class="d-inline">
+            <input type="number" formControlName="stockQty" placeholder="Stock Qty"
+              class="form-control form-control-sm d-inline-block" style="width:80px; margin-right:8px;" />
+          </form>
+          <ng-template #showStock>{{ product.stockQty }}</ng-template>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let product; let i = index">
           <ng-container *ngIf="addingRow && i === 0">
             <button mat-button color="primary" (click)="saveProduct()">
               Save
@@ -131,10 +146,12 @@
           </ng-container>
         </td>
       </ng-container>
-    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-    <!-- No data row removed; message will be shown below the table -->
-  </table>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      <!-- No data row removed; message will be shown below the table -->
+    </table>
+  </div>
   <div *ngIf="dataSource.filteredData.length === 0" class="no-data-message">No data available.</div>
-  <mat-paginator *ngIf="dataSource.filteredData.length > 0" [length]="total" [pageSize]="pageSize" [pageSizeOptions]="pageSizeOptions" (page)="onMatPage($event)"></mat-paginator>
+  <mat-paginator class="mb-3" *ngIf="dataSource.filteredData.length > 0 && !showImportForm" [length]="total" [pageSize]="pageSize"
+    [pageSizeOptions]="pageSizeOptions" (page)="onMatPage($event)"></mat-paginator>
 </div>

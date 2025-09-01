@@ -19,6 +19,28 @@
     width: 400px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.12);
 }
+
+.import-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+.import-card-actions {
+    display: flex;
+    align-items: center;
+}
+.import-cancel {
+    min-width: 100px;
+}
+.import-upload {
+    min-width: 100px;
+}
+
+.import-card-actions button + button {
+    margin-left: 12px;
+}
 .import-label {
     font-weight: 500;
     color: #555;
@@ -169,6 +191,10 @@ body.dark-theme .search-field.mat-form-field {
     color: #888;
     font-size: 1.1rem;
     padding: 24px 0;
+}
+.import-dialog {
+    position: relative;
+    z-index: 20;
 }
 .err-table {
     width: 100%;

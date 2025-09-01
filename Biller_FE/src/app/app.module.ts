@@ -29,6 +29,8 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
 import { ConfirmDialogComponent } from './shared/confirm-dialog.component';
+import { ServerErrorDialogComponent } from './shared/server-error-dialog.component';
+import { ServerErrorInterceptor } from './shared/server-error.interceptor';
 import { InvoiceComponent } from './invoice/invoice.component';
 import { InvoiceService } from './invoice/invoice.service';
 import { HttpClientModule } from '@angular/common/http';
@@ -53,6 +55,7 @@ import { SettingsComponent } from './settings/settings.component';
 		InvoiceComponent,
 		SettingsComponent,
 		LoaderComponent,
+		ServerErrorDialogComponent,
 	],
 	imports: [
 		BrowserModule,
@@ -89,6 +92,12 @@ import { SettingsComponent } from './settings/settings.component';
 		{
 			provide: HTTP_INTERCEPTORS,
 			useClass: AuthInterceptor,
+			multi: true
+		}
+		,
+		{
+			provide: HTTP_INTERCEPTORS,
+			useClass: ServerErrorInterceptor,
 			multi: true
 		}
 	],
