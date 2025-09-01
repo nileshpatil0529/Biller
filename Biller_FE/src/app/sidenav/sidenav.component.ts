@@ -18,7 +18,7 @@ export class SidenavComponent {
     { label: 'Users', route: '/users', icon: 'people' },
     { label: 'Setting', route: '/setting', icon: 'settings' }
   ];
-  collapsed = false;
+  collapsed = true;
   sidenavToggleActive = false;
   constructor(
     private authService: AuthService,
