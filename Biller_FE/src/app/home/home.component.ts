@@ -10,11 +10,10 @@ import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { ClientService, Client } from '../clients/client.service';
-import { InvoiceForm } from './invoice-form.model';
 import { InvoiceService } from '../invoice/invoice.service';
-import { InvoiceComponent } from '../invoice/invoice.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import SnackbarComponent from '../shared/snackbar.component';
+import { LoaderService } from '../shared/services/loader.service';
 
 @Component({
   selector: 'app-home',
@@ -73,7 +72,7 @@ export class HomeComponent implements OnInit {
           verticalPosition: 'top'
         });
         this.editClicked = false;
-    this.router.navigate(['/invoices']);
+        this.router.navigate(['/invoices']);
       },
       error: (err) => {
         console.error('Failed to update invoice:', err);
@@ -132,26 +131,8 @@ export class HomeComponent implements OnInit {
         });
         this.dataSource.data = this.products;
       } else if (invoice.id) {
-        this.invoiceService.getInvoiceProducts(invoice.id).subscribe({
-          next: (products) => {
-            this.products = products.map((p: any) => {
-              const found = this.allProducts?.find(ap => ap.code === p.code);
-              return {
-                code: p.code,
-                name: p.name,
-                unit: p.unit,
-                price: p.price,
-                sell_qty: p.sell_qty,
-                totalValue: typeof p.totalValue === 'number' ? p.totalValue : (p.sell_qty || 0) * p.price,
-                stockQty: found ? found.stockQty : 0
-              };
-            });
-            this.dataSource.data = this.products;
-          },
-          error: (err) => {
-            console.error('Failed to fetch invoice products:', err);
-          }
-        });
+        this.loader.show();
+        this.invoiceService.getInvoiceProducts(invoice.id).subscribe({ next: (products) => { this.products = products.map((p: any) => { const found = this.allProducts?.find(ap => ap.code === p.code); return { code: p.code, name: p.name, unit: p.unit, price: p.price, sell_qty: p.sell_qty, totalValue: typeof p.totalValue === 'number' ? p.totalValue : (p.sell_qty || 0) * p.price, stockQty: found ? found.stockQty : 0 }; }); this.dataSource.data = this.products; }, error: (err) => { console.error('Failed to fetch invoice products:', err); this.loader.hide(); }, complete: () => this.loader.hide() });
       }
     }
   }
@@ -241,6 +222,7 @@ export class HomeComponent implements OnInit {
       sell_qty: typeof product.sell_qty === 'number' ? product.sell_qty : 0,
       totalValue: ((typeof product.sell_qty === 'number' ? product.sell_qty : 0) * product.price)
     }));
+    this.loader.show();
     this.invoiceService.addInvoice({
       client,
       location,
@@ -252,9 +234,11 @@ export class HomeComponent implements OnInit {
       products
     }).subscribe({
       next: () => {
+        this.loader.hide();
         this.router.navigate(['/invoices']);
       },
       error: (err) => {
+        this.loader.hide();
         // Optionally show error to user
         console.error('Failed to save invoice:', err);
       }
@@ -270,7 +254,8 @@ export class HomeComponent implements OnInit {
     private clientService: ClientService,
     private invoiceService: InvoiceService,
     private location: Location,
-    public themeService: ThemeService
+    public themeService: ThemeService,
+    private loader: LoaderService
   ) {
 
     this.productForm = this.fb.group({
@@ -316,11 +301,8 @@ export class HomeComponent implements OnInit {
 
   allProducts: Product[] = [];
   private loadProducts(): void {
-    this.productsService.getProducts().subscribe(allProducts => {
-      this.allProducts = allProducts;
-      this.products = allProducts.filter((p: Product) => p.sell_qty && p.sell_qty > 0);
-      this.dataSource.data = this.products;
-    });
+    this.loader.show();
+    this.productsService.getProducts().subscribe({ next: (allProducts) => { this.allProducts = allProducts; this.products = allProducts.filter((p: Product) => p.sell_qty && p.sell_qty > 0); this.dataSource.data = this.products; }, error: () => { this.loader.hide(); }, complete: () => this.loader.hide() });
   }
 
 

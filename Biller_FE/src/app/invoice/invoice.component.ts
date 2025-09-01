@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { InvoiceService, InvoiceData } from './invoice.service';
+import { LoaderService } from '../shared/services/loader.service';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../shared/confirm-dialog.component';
@@ -37,13 +38,16 @@ export class InvoiceComponent {
     });
     dialogRef.afterClosed().subscribe(confirmed => {
       if (confirmed) {
+        this.loader.show();
         this.invoiceService.deleteInvoice(invoice.id).subscribe({
           next: () => {
             this.invoices = this.invoices.filter(inv => inv.id !== invoice.id);
           },
           error: (err) => {
             console.error('Failed to delete invoice:', err);
-          }
+            this.loader.hide();
+          },
+          complete: () => this.loader.hide()
         });
       }
     });
@@ -52,16 +56,14 @@ export class InvoiceComponent {
   constructor(
     private invoiceService: InvoiceService,
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private loader: LoaderService
   ) {
+    this.loader.show();
     this.invoiceService.getInvoices().subscribe({
-      next: (data) => {
-        this.invoices = data;
-        console.log(this.invoices);
-      },
-      error: (err) => {
-        console.error('Failed to fetch invoices:', err);
-      }
+      next: (data) => { this.invoices = data; console.log(this.invoices); },
+      error: (err) => { console.error('Failed to fetch invoices:', err); this.loader.hide(); },
+      complete: () => this.loader.hide()
     });
   }
 
@@ -70,15 +72,11 @@ export class InvoiceComponent {
       console.error('Invoice id is required to fetch products');
       return;
     }
+    this.loader.show();
     this.invoiceService.getInvoiceProducts(invoice.id).subscribe({
-      next: (products) => {
-        this.router.navigate(['/home'], {
-          state: { invoice, products }
-        });
-      },
-      error: (err) => {
-        console.error('Failed to fetch invoice products:', err);
-      }
+      next: (products) => { this.router.navigate(['/home'], { state: { invoice, products } }); },
+      error: (err) => { console.error('Failed to fetch invoice products:', err); this.loader.hide(); },
+      complete: () => this.loader.hide()
     });
   }
 

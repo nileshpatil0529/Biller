@@ -1,6 +1,7 @@
 <ng-container *ngIf="!isLoginRoute(); else loginOnly">
 	<app-sidenav>
 		<router-outlet></router-outlet>
+		<app-loader></app-loader>
 	</app-sidenav>
 </ng-container>
 <ng-template #loginOnly>

@@ -8,6 +8,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import SnackbarComponent from '../shared/snackbar.component';
 import { ConfirmDialogComponent } from '../shared/confirm-dialog.component';
+import { LoaderService } from '../shared/services/loader.service';
 
 @Component({
   selector: 'app-users',
@@ -31,6 +32,7 @@ export class UsersComponent implements OnInit {
     private fb: FormBuilder,
     private dialog: MatDialog,
     private snackBar: MatSnackBar
+    , private loader: LoaderService
   ) {
     this.userForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(5)]],
@@ -39,10 +41,11 @@ export class UsersComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.loader.show();
     this.usersService.getUsers().subscribe({
-      next: (users) => {
-        this.dataSource.data = users;
-      }
+      next: (users) => { this.dataSource.data = users; },
+      error: () => { },
+      complete: () => this.loader.hide()
     });
   }
 
@@ -64,9 +67,10 @@ export class UsersComponent implements OnInit {
       this.userForm.markAllAsTouched();
       return;
     }
-  const { username, role } = this.userForm.value;
-  if (this.editingUserId === null) {
+    const { username, role } = this.userForm.value;
+    if (this.editingUserId === null) {
       // Add user
+      this.loader.show();
       this.usersService.createUser({ username, role }).subscribe({
         next: (user) => {
           this.usersService.getUsers().subscribe({
@@ -76,27 +80,21 @@ export class UsersComponent implements OnInit {
               this.showUserForm = false;
               this.editingUserId = null;
               this.addUserBtnDisabled = false;
-              this.snackBar.openFromComponent(SnackbarComponent, {
-                data: { message: 'User added successfully!', class: 'snackbar-success' },
-                duration: 3000,
-                verticalPosition: 'top'
-              });
-            }
+              this.snackBar.openFromComponent(SnackbarComponent, { data: { message: 'User added successfully!', class: 'snackbar-success' }, duration: 3000, verticalPosition: 'top' });
+            }, complete: () => this.loader.hide()
           });
         },
         error: (err) => {
           let msg = 'Error adding user';
           if (err?.error?.message) msg = err.error.message;
           this.addUserBtnDisabled = false;
-          this.snackBar.openFromComponent(SnackbarComponent, {
-            data: { message: msg, class: 'snackbar-error' },
-            duration: 4000,
-            verticalPosition: 'top'
-          });
+          this.snackBar.openFromComponent(SnackbarComponent, { data: { message: msg, class: 'snackbar-error' }, duration: 4000, verticalPosition: 'top' });
+          this.loader.hide();
         }
       });
     } else {
       // Edit user
+      this.loader.show();
       this.usersService.updateUser(this.editingUserId, { username, role }).subscribe({
         next: (user) => {
           this.usersService.getUsers().subscribe({
@@ -105,29 +103,22 @@ export class UsersComponent implements OnInit {
               this.userForm.reset({ role: 'user' });
               this.showUserForm = false;
               this.editingUserId = null;
-              this.snackBar.openFromComponent(SnackbarComponent, {
-                data: { message: 'User updated successfully!', class: 'snackbar-success' },
-                duration: 3000,
-                verticalPosition: 'top'
-              });
-            }
+              this.snackBar.openFromComponent(SnackbarComponent, { data: { message: 'User updated successfully!', class: 'snackbar-success' }, duration: 3000, verticalPosition: 'top' });
+            }, complete: () => this.loader.hide()
           });
         },
         error: (err) => {
           let msg = 'Error updating user';
           if (err?.error?.message) msg = err.error.message;
-          this.snackBar.openFromComponent(SnackbarComponent, {
-            data: { message: msg, class: 'snackbar-error' },
-            duration: 4000,
-            verticalPosition: 'top'
-          });
+          this.snackBar.openFromComponent(SnackbarComponent, { data: { message: msg, class: 'snackbar-error' }, duration: 4000, verticalPosition: 'top' });
+          this.loader.hide();
         }
       });
     }
   }
 
   async deleteUser(id: number) {
-  // No longer using addingRow, just proceed
+    // No longer using addingRow, just proceed
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       data: {
         title: 'Delete User',
@@ -136,35 +127,18 @@ export class UsersComponent implements OnInit {
     });
     const confirmed = await dialogRef.afterClosed().toPromise();
     if (confirmed) {
+      this.loader.show();
       this.usersService.deleteUser(id).subscribe({
         next: () => {
-          this.usersService.getUsers().subscribe({
-            next: (users) => {
-              this.dataSource.data = users;
-              this.snackBar.openFromComponent(SnackbarComponent, {
-                data: { message: 'User deleted successfully!', class: 'snackbar-success' },
-                duration: 3000,
-                verticalPosition: 'top'
-              });
-            }
-          });
-        },
-        error: (err) => {
-          let msg = 'Error deleting user';
-          if (err?.error?.message) msg = err.error.message;
-          this.snackBar.openFromComponent(SnackbarComponent, {
-            data: { message: msg, class: 'snackbar-error' },
-            duration: 4000,
-            verticalPosition: 'top'
-          });
-        }
+          this.usersService.getUsers().subscribe({ next: (users) => { this.dataSource.data = users; this.snackBar.openFromComponent(SnackbarComponent, { data: { message: 'User deleted successfully!', class: 'snackbar-success' }, duration: 3000, verticalPosition: 'top' }); }, complete: () => this.loader.hide() });
+        }, error: (err) => { let msg = 'Error deleting user'; if (err?.error?.message) msg = err.error.message; this.snackBar.openFromComponent(SnackbarComponent, { data: { message: msg, class: 'snackbar-error' }, duration: 4000, verticalPosition: 'top' }); this.loader.hide(); }
       });
     }
   }
 
   editUser(user: User) {
-  // Use 'username' property for the form
-  this.userForm.setValue({ username: user.username || '', role: user.role || 'user' });
+    // Use 'username' property for the form
+    this.userForm.setValue({ username: user.username || '', role: user.role || 'user' });
     this.showUserForm = true;
     this.editingUserId = user.id;
   }

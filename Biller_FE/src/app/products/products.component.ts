@@ -10,6 +10,7 @@ import type { Product } from './products.service';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SnackbarComponent } from '../shared/snackbar.component';
+import { LoaderService } from '../shared/services/loader.service';
 
 @Component({
   selector: 'app-products',
@@ -51,7 +52,8 @@ export class ProductsComponent implements OnInit {
     private productsService: ProductsService,
     private dialog: MatDialog,
     private router: Router,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private loader: LoaderService
   ) {
     this.productForm = this.fb.group({
       code: ['', Validators.required],
@@ -93,6 +95,7 @@ export class ProductsComponent implements OnInit {
     }
     const formData = new FormData();
     formData.append('file', this.importFile);
+    this.loader.show();
     this.productsService.uploadProductFile(formData).subscribe({
       next: () => {
         this.importErrors = [];
@@ -105,7 +108,9 @@ export class ProductsComponent implements OnInit {
         this.importFile = null;
         this.importErrors = err?.error?.errors || [{ row: '-', error: err?.error?.message || 'Unknown error', product: {} }];
         this.showSnackbar('Import failed: ' + (err?.error?.message || 'Unknown error'), 'error');
-      }
+        this.loader.hide();
+      },
+      complete: () => { /* loadProducts will hide loader when complete */ }
     });
   }
 
@@ -123,10 +128,8 @@ export class ProductsComponent implements OnInit {
   }
 
   private loadProducts(): void {
-    this.productsService.getProducts().subscribe(products => {
-      this.products = products;
-      this.updateDataSource();
-    });
+    this.loader.show();
+    this.productsService.getProducts().subscribe({ next: (products) => { this.products = products; this.updateDataSource(); }, error: () => { this.loader.hide(); }, complete: () => { this.loader.hide(); } });
   }
 
   private updateDataSource(): void {
@@ -137,9 +140,9 @@ export class ProductsComponent implements OnInit {
 
   /** Opens the edit form for a product */
   openForm(product: Product): void {
-  this.editingProduct = product;
-  this.showForm = true;
-  this.productForm.patchValue(product);
+    this.editingProduct = product;
+    this.showForm = true;
+    this.productForm.patchValue(product);
   }
 
   /** Closes the edit form */
@@ -150,9 +153,9 @@ export class ProductsComponent implements OnInit {
   }
 
   clearFilterAutocomplete() {
-  this.productSearch = '';
-  this.autocompleteTrigger?.closePanel();
-  this.searchInput?.nativeElement?.blur();
+    this.productSearch = '';
+    this.autocompleteTrigger?.closePanel();
+    this.searchInput?.nativeElement?.blur();
   }
 
   applyFilter(value: string) {
@@ -185,7 +188,7 @@ export class ProductsComponent implements OnInit {
     this.addingRow = true;
     this.showForm = false;
     this.productForm.reset({ price: 0, stockQty: 0 });
-  this.products = [{ id: 0, code: '', name: '', unit: '', price: 0, stockQty: 0 }, ...this.products];
+    this.products = [{ id: 0, code: '', name: '', unit: '', price: 0, stockQty: 0 }, ...this.products];
     this.updateDataSource();
   }
 
@@ -194,29 +197,11 @@ export class ProductsComponent implements OnInit {
     const product = this.productForm.value;
     if (this.addingRow) {
       const { id, ...productPayload } = product;
-      this.productsService.addProduct(productPayload).subscribe({
-        next: () => {
-          this.addingRow = false;
-          this.loadProducts();
-          this.productForm.reset({ price: 0, stockQty: 0 });
-          this.showSnackbar('Product added successfully', 'success');
-        },
-        error: (err) => {
-          this.showSnackbar('Failed to add product: ' + (err?.error?.message || 'Unknown error'), 'error');
-        }
-      });
+      this.loader.show();
+      this.productsService.addProduct(productPayload).subscribe({ next: () => { this.addingRow = false; this.loadProducts(); this.productForm.reset({ price: 0, stockQty: 0 }); this.showSnackbar('Product added successfully', 'success'); }, error: (err) => { this.showSnackbar('Failed to add product: ' + (err?.error?.message || 'Unknown error'), 'error'); this.loader.hide(); } });
     } else if (this.editingProduct?.id != null) {
-      this.productsService.updateProduct(this.editingProduct.id, product).subscribe({
-        next: () => {
-          this.showForm = false;
-          this.editingProduct = null;
-          this.loadProducts();
-          this.productForm.reset({ price: 0, stockQty: 0 });
-        },
-        error: (err) => {
-          this.showSnackbar('Failed to update product: ' + (err?.error?.message || 'Unknown error'), 'error');
-        }
-      });
+      this.loader.show();
+      this.productsService.updateProduct(this.editingProduct.id, product).subscribe({ next: () => { this.showForm = false; this.editingProduct = null; this.loadProducts(); this.productForm.reset({ price: 0, stockQty: 0 }); }, error: (err) => { this.showSnackbar('Failed to update product: ' + (err?.error?.message || 'Unknown error'), 'error'); this.loader.hide(); } });
     } else {
       this.showSnackbar('Cannot update: Product ID is missing.', 'error');
     }
@@ -235,17 +220,15 @@ export class ProductsComponent implements OnInit {
     if (await dialogRef.afterClosed().toPromise()) {
       const product = this.products[index];
       if (product?.id) {
-        this.productsService.deleteProduct(product.id).subscribe({
-          next: () => { this.loadProducts(); this.showSnackbar('Product deleted successfully', 'success'); },
-          error: (err) => { this.showSnackbar('Failed to delete product: ' + (err?.error?.message || 'Unknown error'), 'error'); },
-        });
+        this.loader.show();
+        this.productsService.deleteProduct(product.id).subscribe({ next: () => { this.loadProducts(); this.showSnackbar('Product deleted successfully', 'success'); }, error: (err) => { this.showSnackbar('Failed to delete product: ' + (err?.error?.message || 'Unknown error'), 'error'); this.loader.hide(); }, complete: () => { } });
       }
     }
   }
 
   exportProducts(): void {
-  const csv = ['code,name,unit,price,stockQty', ...this.products.map(p => [p.code, p.name, p.unit, p.price, p.stockQty].join(','))].join('\r\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
+    const csv = ['code,name,unit,price,stockQty', ...this.products.map(p => [p.code, p.name, p.unit, p.price, p.stockQty].join(','))].join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;

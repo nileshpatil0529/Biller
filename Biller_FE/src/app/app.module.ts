@@ -37,20 +37,23 @@ import { AuthInterceptor } from './shared/auth.interceptor';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { LoaderComponent } from './shared/components/loader/loader.component';
 import { SettingsComponent } from './settings/settings.component';
 
 @NgModule({
-		declarations: [
-			AppComponent,
-			LoginComponent,
-			SidenavComponent,
-			UsersComponent,
-			ProductsComponent,
-			ConfirmDialogComponent,
-			HomeComponent,
-			InvoiceComponent,
-			SettingsComponent,
-		],
+	declarations: [
+		AppComponent,
+		LoginComponent,
+		SidenavComponent,
+		UsersComponent,
+		ProductsComponent,
+		ConfirmDialogComponent,
+		HomeComponent,
+		InvoiceComponent,
+		SettingsComponent,
+		LoaderComponent,
+	],
 	imports: [
 		BrowserModule,
 		AppRoutingModule,
@@ -74,6 +77,7 @@ import { SettingsComponent } from './settings/settings.component';
 		MatOptionModule,
 		HttpClientModule,
 		MatSnackBarModule,
+		MatProgressSpinnerModule,
 		MatSlideToggleModule,
 		MatTooltipModule
 	],

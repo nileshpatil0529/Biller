@@ -1,0 +1,6 @@
+<div class="loader-overlay" *ngIf="loaderService.loading$ | async">
+    <div class="loader-backdrop"></div>
+    <div class="loader-center">
+        <mat-spinner diameter="56"></mat-spinner>
+    </div>
+</div>
